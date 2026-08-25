@@ -9,21 +9,16 @@ import { FadeIn } from "../motion/fade-in";
 import { Magnetic } from "../motion/magnetic";
 import { MaskText } from "../motion/mask-text";
 import { DURATION, EASE_OUT_EXPO, STAGGER } from "../../motion";
+import { siteConfig } from "../../site-config";
 
 type RepresentativeSectionProps = {
   whatsappUrl: string;
-  whatsappDisplay: string;
-  quote: string;
 };
 
-export function RepresentativeSection({
-  whatsappUrl,
-  whatsappDisplay,
-  quote,
-}: RepresentativeSectionProps) {
+export function RepresentativeSection({ whatsappUrl }: RepresentativeSectionProps) {
   const quoteRef = useRef<HTMLParagraphElement>(null);
   const isInView = useInView(quoteRef, { once: true, margin: "-10% 0px" });
-  const words = quote.split(" ");
+  const words = siteConfig.contact.teamQuote.split(" ");
 
   return (
     <section className="representative-section">
@@ -40,9 +35,9 @@ export function RepresentativeSection({
 
         <div className="representative-copy">
           <FadeIn>
-            <p className="eyebrow eyebrow-dark">Seu contato em Mato Grosso</p>
+            <p className="eyebrow eyebrow-dark">Atendimento comercial</p>
             <h2>
-              <MaskText as="span">Rodrigo Figueiredo</MaskText>
+              <MaskText as="span">{siteConfig.contact.teamHeadline}</MaskText>
             </h2>
           </FadeIn>
 
@@ -75,7 +70,7 @@ export function RepresentativeSection({
                 rel="noreferrer"
               >
                 <MessageCircle aria-hidden="true" size={20} strokeWidth={1.8} />
-                {whatsappDisplay}
+                {siteConfig.contact.cta}
               </a>
             </Magnetic>
           </FadeIn>

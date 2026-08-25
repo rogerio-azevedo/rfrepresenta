@@ -99,7 +99,7 @@ export default function OpenGraphImage() {
             fontSize: 23,
           }}
         >
-          Atendimento direto com Rodrigo Figueiredo
+          Atendimento comercial em todo Mato Grosso
         </div>
       </div>
     </div>,

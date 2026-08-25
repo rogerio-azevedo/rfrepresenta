@@ -23,13 +23,12 @@ export const metadata: Metadata = {
   ),
   title: "RF Representa | Altenburg para lojistas em Mato Grosso",
   description:
-    "Representação comercial Altenburg para lojistas em todo o Mato Grosso. Atendimento direto com Rodrigo Figueiredo.",
+    "Representação comercial Altenburg para lojistas em todo o Mato Grosso. Atendimento direto com nosso time comercial.",
   applicationName: "RF Representa",
   creator: "RF Representa",
   keywords: [
     "representante Altenburg Mato Grosso",
     "RF Representa",
-    "Rodrigo Figueiredo",
     "cama e banho para lojistas",
     "travesseiros Altenburg",
   ],

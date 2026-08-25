@@ -5,6 +5,7 @@ import { MessageCircle } from "lucide-react";
 import { FadeIn } from "../motion/fade-in";
 import { Magnetic } from "../motion/magnetic";
 import { MaskText } from "../motion/mask-text";
+import { siteConfig } from "../../site-config";
 
 type FinalCtaSectionProps = {
   whatsappUrl: string;
@@ -38,7 +39,7 @@ export function FinalCtaSection({ whatsappUrl }: FinalCtaSectionProps) {
             rel="noreferrer"
           >
             <MessageCircle aria-hidden="true" size={20} strokeWidth={1.8} />
-            Falar com Rodrigo no WhatsApp
+            {siteConfig.contact.ctaWhatsapp}
           </a>
         </Magnetic>
       </FadeIn>

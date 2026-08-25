@@ -16,7 +16,7 @@ const serviceSteps = [
     number: "01",
     title: "Conheça as coleções",
     description:
-      "Converse diretamente com Rodrigo e descubra as linhas que fazem sentido para o perfil da sua loja.",
+      "Converse diretamente com um consultor e descubra as linhas que fazem sentido para o perfil da sua loja.",
     icon: ShoppingBag,
   },
   {

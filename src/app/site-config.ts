@@ -14,8 +14,18 @@ export type RepresentedBrand = {
 
 export const siteConfig = {
   name: "RF Representa",
-  representative: "Rodrigo Figueiredo",
   territory: "Todo o estado de Mato Grosso",
+  contact: {
+    cta: "Falar com um consultor",
+    ctaWhatsapp: "Falar com um consultor no WhatsApp",
+    ariaWhatsapp: "Falar com um consultor no WhatsApp",
+    heroSupport:
+      "Atendimento direto com nosso time comercial, da escolha do mix ao acompanhamento de cada pedido.",
+    teamHeadline: "Consultoria comercial em Mato Grosso",
+    teamQuote:
+      "Atendimento próximo para ajudar cada lojista a encontrar o mix certo para o seu negócio.",
+    heroFactLabel: "Com nosso time",
+  },
   company: {
     legalName: "RLBF Representação Comercial Ltda",
     cnpj: "31.669.335/0001-20",
@@ -25,7 +35,7 @@ export const siteConfig = {
   whatsappNumber: "5566999687575",
   whatsappDisplay: "(66) 99968-7575",
   whatsappMessage:
-    "Olá, Rodrigo! Vim pelo site da RF Representa e gostaria de conhecer o portfólio Altenburg para minha loja.",
+    "Olá! Vim pelo site da RF Representa e gostaria de conhecer o portfólio Altenburg para minha loja.",
   navigation: [
     { label: "Portfólio", href: "#portfolio" },
     { label: "Altenburg", href: "#altenburg" },

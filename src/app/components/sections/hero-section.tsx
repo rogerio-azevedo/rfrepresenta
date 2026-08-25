@@ -14,6 +14,7 @@ import { FadeIn } from "../motion/fade-in";
 import { MaskText } from "../motion/mask-text";
 import { Parallax } from "../motion/parallax";
 import { DURATION, EASE_OUT_EXPO, STAGGER } from "../../motion";
+import { siteConfig } from "../../site-config";
 
 type HeroSectionProps = {
   whatsappUrl: string;
@@ -22,7 +23,7 @@ type HeroSectionProps = {
 const heroFacts = [
   { strong: "Todo Mato Grosso", span: "Atendimento comercial" },
   { strong: "Cama, banho e conforto", span: "Portfólio Altenburg" },
-  { strong: "Contato direto", span: "Com o representante" },
+  { strong: "Contato direto", span: siteConfig.contact.heroFactLabel },
 ];
 
 export function HeroSection({ whatsappUrl }: HeroSectionProps) {
@@ -85,10 +86,7 @@ export function HeroSection({ whatsappUrl }: HeroSectionProps) {
         </FadeIn>
 
         <FadeIn delay={0.45}>
-          <p className="hero-support">
-            Atendimento direto com Rodrigo Figueiredo, da escolha do mix ao
-            acompanhamento de cada pedido.
-          </p>
+          <p className="hero-support">{siteConfig.contact.heroSupport}</p>
         </FadeIn>
 
         <FadeIn className="hero-actions" delay={0.55}>
@@ -99,7 +97,7 @@ export function HeroSection({ whatsappUrl }: HeroSectionProps) {
             rel="noreferrer"
           >
             <MessageCircle aria-hidden="true" size={20} strokeWidth={1.8} />
-            Falar com Rodrigo
+            {siteConfig.contact.cta}
           </a>
           <a className="text-link text-link-light" href="#portfolio">
             Conhecer o portfólio

@@ -95,7 +95,7 @@ export function SiteHeader({ whatsappUrl }: SiteHeaderProps) {
         </Link>
         <a className="header-contact" href={whatsappUrl} target="_blank" rel="noreferrer">
           <MessageCircle aria-hidden="true" size={18} strokeWidth={1.8} />
-          <span>Falar com Rodrigo</span>
+          <span>{siteConfig.contact.cta}</span>
         </a>
       </div>
 
@@ -139,7 +139,7 @@ export function SiteHeader({ whatsappUrl }: SiteHeaderProps) {
           onClick={closeMenu}
         >
           <MessageCircle aria-hidden="true" size={19} strokeWidth={1.8} />
-          Falar com Rodrigo
+          {siteConfig.contact.cta}
         </a>
       </nav>
     </m.header>

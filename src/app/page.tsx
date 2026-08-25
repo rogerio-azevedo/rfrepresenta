@@ -29,7 +29,7 @@ const faqs = [
   {
     question: "Como posso conhecer coleções e solicitar um orçamento?",
     answer:
-      "Basta chamar Rodrigo pelo WhatsApp. A mensagem já identifica que o contato veio pelo site e inicia o atendimento comercial.",
+      "Basta chamar nosso time pelo WhatsApp. A mensagem já identifica que o contato veio pelo site e inicia o atendimento comercial.",
   },
   {
     question: "O atendimento cobre quais cidades?",
@@ -71,11 +71,7 @@ export default function Home() {
 
       <ServiceSection />
 
-      <RepresentativeSection
-        whatsappUrl={whatsappUrl}
-        whatsappDisplay={siteConfig.whatsappDisplay}
-        quote="Atendimento próximo para ajudar cada lojista a encontrar o mix certo para o seu negócio."
-      />
+      <RepresentativeSection whatsappUrl={whatsappUrl} />
 
       <TerritorySection whatsappUrl={whatsappUrl} />
 

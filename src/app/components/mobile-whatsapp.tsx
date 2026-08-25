@@ -3,6 +3,8 @@
 import { MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { siteConfig } from "../site-config";
+
 type MobileWhatsAppProps = {
   href: string;
 };
@@ -32,7 +34,7 @@ export function MobileWhatsApp({ href }: MobileWhatsAppProps) {
       href={href}
       target="_blank"
       rel="noreferrer"
-      aria-label="Falar com Rodrigo no WhatsApp"
+      aria-label={siteConfig.contact.ariaWhatsapp}
     >
       <MessageCircle aria-hidden="true" size={22} strokeWidth={1.8} />
       <span>WhatsApp</span>
