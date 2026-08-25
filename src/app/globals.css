@@ -1064,6 +1064,7 @@ img {
 
 .quote-word {
     display: inline-block;
+    margin-right: 0.34em;
 }
 
 .territory-band {

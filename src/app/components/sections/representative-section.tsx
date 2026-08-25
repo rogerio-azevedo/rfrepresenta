@@ -61,7 +61,7 @@ export function RepresentativeSection({
                   ease: EASE_OUT_EXPO,
                 }}
               >
-                {word}{" "}
+                {word}
               </m.span>
             ))}
           </p>
