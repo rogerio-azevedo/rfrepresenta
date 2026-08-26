@@ -85,7 +85,7 @@ export function ShowcaseSection({ products = [] }: { products?: ShowcaseProduct[
   }, []);
 
   const sectionHeight =
-    maxScroll > 0 ? `calc(100dvh + ${maxScroll}px)` : "100dvh";
+    maxScroll > 0 ? `calc(100dvh + ${maxScroll}px)` : "auto";
 
   return (
     <section
@@ -115,7 +115,10 @@ export function ShowcaseSection({ products = [] }: { products?: ShowcaseProduct[
           />
 
           {prefersReducedMotion ? (
-            <div className="showcase-track showcase-track-mobile">
+            <div
+              className="showcase-track showcase-track-mobile"
+              data-lenis-prevent
+            >
               {products.map((product) => (
                 <article className="showcase-card" key={product.id}>
                   <div className="showcase-card-media">
@@ -158,7 +161,10 @@ export function ShowcaseSection({ products = [] }: { products?: ShowcaseProduct[
                 ))}
               </m.div>
 
-              <div className="showcase-track showcase-track-mobile">
+              <div
+                className="showcase-track showcase-track-mobile"
+                data-lenis-prevent
+              >
                 {products.map((product) => (
                   <article className="showcase-card" key={`mobile-${product.id}`}>
                     <div className="showcase-card-media">

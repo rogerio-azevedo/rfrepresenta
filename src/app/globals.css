@@ -700,6 +700,12 @@ img {
     padding-block: clamp(24px, 3.5vh, 36px);
 }
 
+@media (min-width: 901px) {
+    .showcase-sticky {
+        padding-bottom: 8px;
+    }
+}
+
 .showcase-heading .eyebrow {
     margin-bottom: 12px;
 }
@@ -1542,6 +1548,8 @@ img {
 
     .showcase-section {
         --showcase-card-width: min(280px, 78vw);
+        height: auto !important;
+        padding-bottom: clamp(48px, 8vh, 64px);
     }
 
     .showcase-track-desktop {
@@ -1550,9 +1558,12 @@ img {
 
     .showcase-track-mobile {
         display: flex;
+        width: auto;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
+        touch-action: pan-x pan-y;
+        overscroll-behavior-x: contain;
         scrollbar-width: none;
     }
 
