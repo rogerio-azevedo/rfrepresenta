@@ -8,11 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "./submit-button";
 
-export function LoginForm() {
+export function LoginForm({ callbackUrl = "/acesso" }: { callbackUrl?: string }) {
   const [state, action] = useActionState(loginAction, initialFormState);
 
   return (
     <form action={action} className="grid gap-5">
+      <input type="hidden" name="callbackUrl" value={callbackUrl} />
       {state.message && (
         <Alert variant="destructive">
           <AlertDescription>{state.message}</AlertDescription>

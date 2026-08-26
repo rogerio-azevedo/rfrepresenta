@@ -14,16 +14,17 @@ type AltenburgSectionProps = {
 export function AltenburgSection({ whatsappUrl }: AltenburgSectionProps) {
   return (
     <section className="altenburg-section" id="altenburg">
-      <div className="altenburg-media">
-        <Image
-          src="/images/altenburg/cama-serenity.jpg"
-          alt="Cama Altenburg com estampa botânica em ambiente acolhedor"
-          fill
-          sizes="(max-width: 900px) 100vw, 50vw"
-        />
-      </div>
+      <div className="altenburg-frame">
+        <div className="altenburg-media">
+          <Image
+            src="/images/altenburg/cama-serenity.jpg"
+            alt="Cama Altenburg com estampa botânica em ambiente acolhedor"
+            fill
+            sizes="(max-width: 1080px) 100vw, 590px"
+          />
+        </div>
 
-      <div className="altenburg-copy">
+        <div className="altenburg-copy">
         <FadeIn className="altenburg-intro">
           <p className="eyebrow eyebrow-brand">Marca principal representada</p>
           <Image
@@ -85,6 +86,7 @@ export function AltenburgSection({ whatsappUrl }: AltenburgSectionProps) {
             <ArrowRight aria-hidden="true" size={18} strokeWidth={1.8} />
           </a>
         </FadeIn>
+        </div>
       </div>
     </section>
   );

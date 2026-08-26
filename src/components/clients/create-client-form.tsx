@@ -7,7 +7,7 @@ import { createClientAction, type CredentialActionState } from "@/actions/client
 import { CredentialDialog } from "@/components/auth/credential-dialog";
 import { SubmitButton } from "@/components/auth/submit-button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ClientFormFields } from "./client-form-fields";
@@ -43,9 +43,9 @@ export function CreateClientForm() {
           </div>
         </section>
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-          <Button variant="outline" render={<Link href="/admin/clientes" />}><ArrowLeft aria-hidden="true" /> Voltar</Button>
+          <Link href="/admin/clientes" className={buttonVariants({ variant: "outline" })}><ArrowLeft aria-hidden="true" /> Voltar</Link>
           {state.status === "success" && state.clientId ? (
-            <Button render={<Link href={`/admin/clientes/${state.clientId}`} />}><ExternalLink aria-hidden="true" /> Abrir cliente</Button>
+            <Link href={`/admin/clientes/${state.clientId}`} className={buttonVariants()}><ExternalLink aria-hidden="true" /> Abrir cliente</Link>
           ) : <SubmitButton>Criar cliente e acesso</SubmitButton>}
         </div>
       </form>

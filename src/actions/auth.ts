@@ -24,10 +24,15 @@ export async function loginAction(
     };
   }
 
+  const requestedCallback = formData.get("callbackUrl");
+  const redirectTo = typeof requestedCallback === "string" && requestedCallback.startsWith("/") && !requestedCallback.startsWith("//")
+    ? requestedCallback
+    : "/acesso";
+
   try {
     await signIn("credentials", {
       ...parsed.data,
-      redirectTo: "/acesso",
+      redirectTo,
     });
   } catch (error) {
     if (error instanceof AuthError) {
@@ -39,7 +44,7 @@ export async function loginAction(
     throw error;
   }
 
-  redirect("/acesso");
+  redirect(redirectTo);
 }
 
 export async function changePasswordAction(

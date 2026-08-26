@@ -27,3 +27,10 @@ export function formatDate(value: Date | null) {
     timeZone: "America/Cuiaba",
   }).format(value);
 }
+
+export function formatCurrency(value: number | string | null) {
+  if (value === null || value === undefined || value === "") return "-";
+  const numberValue = typeof value === "string" ? Number(value) : value;
+  if (!Number.isFinite(numberValue)) return "-";
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(numberValue);
+}

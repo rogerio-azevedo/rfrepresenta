@@ -1,0 +1,20 @@
+import Link from "next/link";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { CatalogAdminNav } from "@/components/products/catalog-admin-nav";
+import { PageHeading } from "@/components/layout/page-heading";
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { listAdminFamilies } from "@/server/dal/catalog-admin";
+
+export const metadata = { title: "Famílias | Produtos" };
+
+export default async function FamiliesPage({ searchParams }: { searchParams: Promise<{ q?: string; status?: string; page?: string }> }) {
+  const params = await searchParams;
+  const status = params.status === "AUTO_APPROVED" || params.status === "NEEDS_REVIEW" || params.status === "REVIEWED" ? params.status : "ALL";
+  const result = await listAdminFamilies({ q: params.q, status, page: Number(params.page) || 1 });
+  const href = (page: number) => { const q = new URLSearchParams(); if (params.q) q.set("q", params.q); if (status !== "ALL") q.set("status", status); if (page > 1) q.set("page", String(page)); return `/admin/produtos/familias${q.size ? `?${q}` : ""}`; };
+  const pageCount = Math.max(1, Math.ceil(result.total / 50));
+  return <><PageHeading title="Famílias" description="Agrupamentos de cores, tamanhos e demais variações." /><CatalogAdminNav current="/admin/produtos/familias" /><form className="mb-5 grid gap-3 rounded-lg border bg-white p-4 sm:grid-cols-[1fr_220px_auto]"><div className="relative"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input name="q" defaultValue={params.q} className="h-10 pl-9" placeholder="Buscar família" /></div><select name="status" defaultValue={status} className="h-10 rounded-md border bg-white px-3 text-sm"><option value="ALL">Todas as revisões</option><option value="AUTO_APPROVED">Automáticas</option><option value="NEEDS_REVIEW">Precisam de revisão</option><option value="REVIEWED">Revisadas</option></select><Button type="submit" className="h-10">Filtrar</Button></form><div className="overflow-x-auto rounded-lg border bg-white"><Table className="min-w-[760px]"><TableHeader><TableRow><TableHead>Família</TableHead><TableHead>Revisão</TableHead><TableHead>SKUs</TableHead><TableHead>Publicados</TableHead><TableHead /></TableRow></TableHeader><TableBody>{result.items.map((family) => <TableRow key={family.id}><TableCell><p className="font-medium">{family.name}</p><p className="text-xs text-muted-foreground">{family.id}</p></TableCell><TableCell><Badge variant={family.reviewStatus === "NEEDS_REVIEW" ? "outline" : "secondary"}>{family.reviewStatus === "NEEDS_REVIEW" ? "Revisar" : family.reviewStatus === "REVIEWED" ? "Revisada" : "Automática"}</Badge></TableCell><TableCell>{family.memberCount}</TableCell><TableCell>{family.publicCount}</TableCell><TableCell><Link className={buttonVariants({ variant: "ghost" })} href={`/admin/produtos/familias/${family.id}`}>Abrir</Link></TableCell></TableRow>)}</TableBody></Table></div><div className="mt-4 flex items-center justify-between text-sm text-muted-foreground"><span>{result.total} famílias</span><div className="flex items-center gap-2">{result.page <= 1 ? <span className={buttonVariants({ variant: "outline", size: "icon", className: "pointer-events-none opacity-50" })} aria-disabled="true"><ChevronLeft /></span> : <Link className={buttonVariants({ variant: "outline", size: "icon" })} href={href(result.page - 1)} aria-label="Página anterior"><ChevronLeft /></Link>}<span>{result.page} de {pageCount}</span>{result.page >= pageCount ? <span className={buttonVariants({ variant: "outline", size: "icon", className: "pointer-events-none opacity-50" })} aria-disabled="true"><ChevronRight /></span> : <Link className={buttonVariants({ variant: "outline", size: "icon" })} href={href(result.page + 1)} aria-label="Próxima página"><ChevronRight /></Link>}</div></div></>;
+}

@@ -11,6 +11,11 @@ test("protected admin route redirects to login", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible();
 });
 
+test("product management route remains protected", async ({ page }) => {
+  await page.goto("/admin/produtos");
+  await expect(page).toHaveURL(/\/login\?callbackUrl=%2Fadmin%2Fprodutos/);
+});
+
 test("login form remains usable on narrow screens", async ({ page }) => {
   await page.goto("/login");
   await expect(page.getByLabel("E-mail")).toBeVisible();

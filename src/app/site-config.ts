@@ -37,6 +37,7 @@ export const siteConfig = {
   whatsappMessage:
     "Olá! Vim pelo site da RF Representa e gostaria de conhecer o portfólio Altenburg para minha loja.",
   navigation: [
+    { label: "Catálogo", href: "/catalogo" },
     { label: "Portfólio", href: "#portfolio" },
     { label: "Altenburg", href: "#altenburg" },
     { label: "Atendimento", href: "#atendimento" },
@@ -98,7 +99,7 @@ export const siteConfig = {
   ],
 } as const;
 
-export function buildWhatsAppUrl(message = siteConfig.whatsappMessage) {
+export function buildWhatsAppUrl(message: string = siteConfig.whatsappMessage) {
   return `https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(message)}`;
 }
 

@@ -67,7 +67,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${fraunces.variable}`}>
+    <html lang="pt-BR" className={`${inter.variable} ${fraunces.variable}`} data-scroll-behavior="smooth">
       <body>
         <noscript>
           <style>{`.motion-fallback,.mask-line-inner,.clip-reveal,.fade-in{opacity:1!important;transform:none!important;clip-path:none!important}`}</style>

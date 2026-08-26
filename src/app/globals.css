@@ -120,7 +120,7 @@ img {
 }
 
 .section-pad {
-    padding-block: 96px;
+    padding-block: 64px;
 }
 
 .mask-text {
@@ -685,25 +685,37 @@ img {
 .showcase-section {
     position: relative;
     background: var(--paper);
+    --showcase-card-width: min(300px, 72vw);
 }
 
 .showcase-sticky {
     position: sticky;
-    top: 0;
+    top: var(--header-height);
     display: flex;
-    min-height: 100vh;
+    min-height: calc(100dvh - var(--header-height));
+    max-height: calc(100dvh - var(--header-height));
     flex-direction: column;
-    justify-content: center;
-    gap: 32px;
-    padding-block: 88px;
+    justify-content: flex-start;
+    gap: clamp(16px, 2.5vh, 22px);
+    padding-block: clamp(24px, 3.5vh, 36px);
+}
+
+.showcase-heading .eyebrow {
+    margin-bottom: 12px;
 }
 
 .showcase-heading h2 {
-    max-width: 720px;
-    margin: 0;
-    font-size: 50px;
-    font-weight: 690;
-    line-height: 1.1;
+    max-width: 640px;
+    font-size: clamp(34px, 3.6vw, 44px);
+    line-height: 1.08;
+}
+
+.showcase-frame {
+    display: flex;
+    width: min(1180px, calc(100% - 48px));
+    margin-inline: auto;
+    flex-direction: column;
+    gap: clamp(16px, 2.5vh, 22px);
 }
 
 .showcase-track-shell {
@@ -716,7 +728,7 @@ img {
     z-index: 2;
     top: 0;
     right: 0;
-    width: min(180px, 18vw);
+    width: 72px;
     height: 100%;
     pointer-events: none;
     background: linear-gradient(to left, var(--paper), transparent);
@@ -724,12 +736,8 @@ img {
 
 .showcase-track {
     display: flex;
+    width: max-content;
     gap: 22px;
-    padding-inline: max(24px, calc((100% - 1180px) / 2));
-}
-
-.showcase-track-end {
-    flex: 0 0 min(12vw, 160px);
 }
 
 .showcase-track-mobile {
@@ -737,7 +745,9 @@ img {
 }
 
 .showcase-card {
-    flex: 0 0 min(420px, 78vw);
+    flex: 0 0 var(--showcase-card-width);
+    width: var(--showcase-card-width);
+    min-width: var(--showcase-card-width);
     overflow: hidden;
     border-radius: 8px;
     background: var(--white);
@@ -746,7 +756,7 @@ img {
 
 .showcase-card-media {
     position: relative;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 5 / 6;
     overflow: hidden;
     background: #d8dcd7;
 }
@@ -756,22 +766,78 @@ img {
 }
 
 .showcase-card-copy {
-    padding: 22px 24px 26px;
+    padding: 14px 18px 16px;
 }
 
 .showcase-card-copy span {
     color: var(--brand-red);
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 780;
     letter-spacing: 0.14em;
     text-transform: uppercase;
 }
 
 .showcase-card-copy h3 {
-    margin: 10px 0 0;
-    font-size: 24px;
+    margin: 8px 0 0;
+    font-size: 20px;
     font-weight: 680;
     line-height: 1.2;
+}
+
+@media (min-width: 1600px) and (min-height: 900px) {
+    .showcase-section {
+        --showcase-card-width: 480px;
+    }
+
+    .showcase-card-media {
+        aspect-ratio: auto;
+        height: min(720px, calc(100dvh - var(--header-height) - 250px));
+    }
+
+    .showcase-card-copy {
+        padding: 16px 20px 18px;
+    }
+
+    .showcase-card-copy span {
+        font-size: 11px;
+    }
+
+    .showcase-card-copy h3 {
+        font-size: 22px;
+    }
+}
+
+@media (max-height: 760px) and (min-width: 681px) {
+    .showcase-sticky {
+        gap: 14px;
+        padding-block: clamp(16px, 2.5vh, 24px);
+    }
+
+    .showcase-section {
+        --showcase-card-width: min(248px, 64vw);
+    }
+
+    .showcase-heading .eyebrow {
+        margin-bottom: 8px;
+        font-size: 11px;
+    }
+
+    .showcase-heading h2 {
+        font-size: clamp(28px, 3.2vw, 36px);
+    }
+
+    .showcase-card-media {
+        aspect-ratio: 1 / 1;
+    }
+
+    .showcase-card-copy {
+        padding: 12px 16px 14px;
+    }
+
+    .showcase-card-copy h3 {
+        margin-top: 6px;
+        font-size: 18px;
+    }
 }
 
 .category-card-4 img {
@@ -817,11 +883,16 @@ img {
 }
 
 .altenburg-section {
-    display: grid;
-    min-height: auto;
-    grid-template-columns: 1fr 1fr;
     background: var(--forest);
     color: var(--white);
+}
+
+.altenburg-frame {
+    display: grid;
+    width: min(1180px, 100%);
+    min-height: auto;
+    margin-inline: auto;
+    grid-template-columns: 1fr 1fr;
 }
 
 .altenburg-media {
@@ -839,7 +910,7 @@ img {
     flex-direction: column;
     justify-content: center;
     gap: 28px;
-    padding: 72px max(48px, calc((100vw - 1180px) / 2));
+    padding: 72px 48px;
     align-items: flex-start;
 }
 
@@ -1019,7 +1090,7 @@ img {
 }
 
 .representative-section {
-    padding-block: 100px;
+    padding-block: 72px;
     background: var(--mist);
 }
 
@@ -1367,7 +1438,7 @@ img {
 
 @media (max-width: 1080px) {
     .section-pad {
-        padding-block: 96px;
+        padding-block: 72px;
     }
 
     .hero h1 {
@@ -1462,7 +1533,8 @@ img {
         grid-column: span 6;
     }
 
-    .altenburg-section {
+    .altenburg-frame {
+        width: 100%;
         grid-template-columns: 1fr;
     }
 
@@ -1479,10 +1551,28 @@ img {
         display: none;
     }
 
+    .showcase-frame {
+        width: 100%;
+    }
+
+    .showcase-heading {
+        width: min(1180px, calc(100% - 48px));
+        margin-inline: auto;
+    }
+
+    .showcase-track {
+        padding-inline: 24px;
+    }
+
     .showcase-sticky {
         position: relative;
         min-height: auto;
-        padding-block: 96px;
+        max-height: none;
+        padding-block: clamp(56px, 10vh, 72px);
+    }
+
+    .showcase-section {
+        --showcase-card-width: min(280px, 78vw);
     }
 
     .showcase-track-desktop {

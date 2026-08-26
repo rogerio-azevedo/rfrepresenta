@@ -8,6 +8,20 @@
       "when": 1787685553289,
       "tag": "0000_tranquil_major_mapleleaf",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787704734208,
+      "tag": "0001_wise_mariko_yashida",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787711633068,
+      "tag": "0002_clammy_speedball",
+      "breakpoints": true
     }
   ]
 }

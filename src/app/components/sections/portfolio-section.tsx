@@ -1,13 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { FadeIn } from "../motion/fade-in";
 import { ClipReveal } from "../motion/clip-reveal";
 import { MaskText } from "../motion/mask-text";
-import type { ProductCategory } from "../../site-config";
-
 type PortfolioSectionProps = {
-  categories: readonly ProductCategory[];
+  categories: ReadonlyArray<{ id: string; name: string; description: string; image: string; imageAlt: string; href: string; count: number }>;
 };
 
 export function PortfolioSection({ categories }: PortfolioSectionProps) {
@@ -34,7 +33,7 @@ export function PortfolioSection({ categories }: PortfolioSectionProps) {
               delay={index * 0.08}
               key={category.id}
             >
-              <div className="category-card-inner">
+              <Link className="category-card-inner block" href={category.href} aria-label={`Ver ${category.name} no catálogo`}>
                 <Image
                   src={category.image}
                   alt={category.imageAlt}
@@ -45,11 +44,13 @@ export function PortfolioSection({ categories }: PortfolioSectionProps) {
                   <span>0{index + 1}</span>
                   <h3>{category.name}</h3>
                   <p>{category.description}</p>
+                  <span className="mt-3 block text-xs font-semibold normal-case tracking-normal">{category.count} {category.count === 1 ? "família" : "famílias"} no catálogo</span>
                 </div>
-              </div>
+              </Link>
             </ClipReveal>
           ))}
         </div>
+        <div className="mt-8 flex justify-center"><Link href="/catalogo" className="button button-primary">Ver catálogo completo</Link></div>
       </div>
     </section>
   );

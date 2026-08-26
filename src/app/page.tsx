@@ -14,6 +14,8 @@ import { TerritorySection } from "./components/sections/territory-section";
 import { SiteHeader } from "./components/site-header";
 import { MobileWhatsApp } from "./components/mobile-whatsapp";
 import { buildMapsUrl, buildWhatsAppUrl, siteConfig } from "./site-config";
+import { listFeaturedCatalogCollections } from "@/server/dal/catalog";
+import { getR2ObjectUrl } from "@/server/catalog/r2";
 
 const faqs = [
   {
@@ -49,9 +51,21 @@ const marqueeItems = [
   "Design",
 ];
 
-export default function Home() {
+export const revalidate = 300;
+
+export default async function Home() {
   const whatsappUrl = buildWhatsAppUrl();
   const mapsUrl = buildMapsUrl();
+  const catalogCollections = await listFeaturedCatalogCollections();
+  const previewCategories = catalogCollections.map((collection) => ({
+    id: collection.slug,
+    name: collection.name,
+    description: collection.description,
+    image: collection.imageKey ? getR2ObjectUrl(collection.imageKey) : "/images/altenburg/colcha-online.jpg",
+    imageAlt: `Seleção ${collection.name} Altenburg`,
+    href: `/catalogo?collection=${collection.slug}`,
+    count: collection.familyCount,
+  }));
 
   return (
     <main>
@@ -63,7 +77,7 @@ export default function Home() {
 
       <Marquee items={marqueeItems} className="hero-marquee" />
 
-      <PortfolioSection categories={siteConfig.categories} />
+      <PortfolioSection categories={previewCategories} />
 
       <ShowcaseSection />
 

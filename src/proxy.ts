@@ -8,8 +8,7 @@ export default auth((request) => {
   const isAccessRouter = pathname === "/acesso";
   const isPasswordRoute = pathname === "/trocar-senha";
   const isAdminRoute = pathname.startsWith("/admin");
-  const isClientRoute = pathname.startsWith("/catalogo");
-  const isProtected = isAccessRouter || isPasswordRoute || isAdminRoute || isClientRoute;
+  const isProtected = isAccessRouter || isPasswordRoute || isAdminRoute;
 
   if (!user && isProtected) {
     const loginUrl = new URL("/login", request.url);
@@ -29,9 +28,6 @@ export default auth((request) => {
     if (isAdminRoute && user.role !== "ADMIN") {
       return NextResponse.redirect(new URL("/acesso", request.url));
     }
-    if (isClientRoute && user.role !== "CLIENT") {
-      return NextResponse.redirect(new URL("/acesso", request.url));
-    }
   }
 
   return NextResponse.next();
@@ -43,6 +39,5 @@ export const config = {
     "/acesso",
     "/trocar-senha",
     "/admin/:path*",
-    "/catalogo/:path*",
   ],
 };

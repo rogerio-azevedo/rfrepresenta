@@ -1,12 +1,15 @@
-import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
-import { AppShell } from "@/components/layout/app-shell";
-import { getCurrentContext } from "@/server/auth/context";
+import Link from "next/link";
+import { CatalogHeader } from "@/components/catalog/catalog-header";
+import { getCatalogViewer } from "@/server/dal/catalog";
 
 export default async function CatalogLayout({ children }: { children: ReactNode }) {
-  const context = await getCurrentContext();
-  if (!context) redirect("/login");
-  if (context.mustChangePassword) redirect("/trocar-senha");
-  if (context.kind !== "client") redirect("/admin");
-  return <AppShell user={{ name: context.name, email: context.email, role: context.role, clientName: context.clientName }}>{children}</AppShell>;
+  const viewer = await getCatalogViewer();
+  return (
+    <div className="min-h-screen bg-[#f6f7f4] text-foreground">
+      <CatalogHeader viewer={viewer} />
+      {children}
+      <footer className="mt-16 border-t bg-[#193025] text-white"><div className="mx-auto flex max-w-[1440px] flex-col gap-2 px-4 py-8 text-sm text-white/70 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8"><span>RF Representa • Catálogo Altenburg para lojistas</span><Link href="/" className="font-medium text-white">Voltar ao site</Link></div></footer>
+    </div>
+  );
 }

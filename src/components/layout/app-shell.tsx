@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Package,
   Store,
   Users,
 } from "lucide-react";
@@ -33,6 +34,7 @@ type ShellUser = {
 const adminNavigation = [
   { href: "/admin", label: "Visão geral", icon: LayoutDashboard },
   { href: "/admin/clientes", label: "Clientes", icon: Users },
+  { href: "/admin/produtos", label: "Produtos", icon: Package },
 ];
 const clientNavigation = [
   { href: "/catalogo", label: "Catálogo", icon: BookOpen },

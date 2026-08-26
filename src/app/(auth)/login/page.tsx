@@ -8,7 +8,7 @@ export const metadata = {
   title: "Entrar | RF Representa",
 };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ senha?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ senha?: string; callbackUrl?: string }> }) {
   const params = await searchParams;
   return (
     <main className="grid min-h-screen overflow-hidden bg-[#f3f5f1] lg:grid-cols-[minmax(0,1fr)_minmax(440px,0.72fr)]">
@@ -37,7 +37,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             </CardHeader>
             <CardContent className="px-6 py-6">
               {params.senha === "alterada" && <p className="mb-5 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Senha atualizada. Entre novamente para continuar.</p>}
-              <LoginForm />
+              <LoginForm callbackUrl={params.callbackUrl} />
               <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">Para recuperar o acesso, entre em contato com o representante.</p>
             </CardContent>
           </Card>
