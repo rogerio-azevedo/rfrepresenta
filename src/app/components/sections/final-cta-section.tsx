@@ -9,14 +9,15 @@ import { siteConfig } from "../../site-config";
 
 type FinalCtaSectionProps = {
   whatsappUrl: string;
+  mediaImageUrl?: string;
 };
 
-export function FinalCtaSection({ whatsappUrl }: FinalCtaSectionProps) {
+export function FinalCtaSection({ whatsappUrl, mediaImageUrl = "/images/altenburg/edredom-moment.jpg" }: FinalCtaSectionProps) {
   return (
     <section className="final-cta">
       <div className="final-cta-media">
         <Image
-          src="/images/altenburg/edredom-moment.jpg"
+          src={mediaImageUrl}
           alt="Ambiente de quarto com edredom Altenburg"
           fill
           sizes="100vw"

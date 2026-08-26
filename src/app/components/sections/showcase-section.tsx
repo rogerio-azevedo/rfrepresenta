@@ -8,11 +8,11 @@ import {
   useTransform,
 } from "motion/react";
 import { useLayoutEffect, useRef, useState } from "react";
-import { showcaseProducts } from "../../showcase-products";
+import type { ShowcaseProduct } from "../../showcase-products";
 import { FadeIn } from "../motion/fade-in";
 import { MaskText } from "../motion/mask-text";
 
-export function ShowcaseSection() {
+export function ShowcaseSection({ products = [] }: { products?: ShowcaseProduct[] }) {
   const sectionRef = useRef<HTMLElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -116,7 +116,7 @@ export function ShowcaseSection() {
 
           {prefersReducedMotion ? (
             <div className="showcase-track showcase-track-mobile">
-              {showcaseProducts.map((product) => (
+              {products.map((product) => (
                 <article className="showcase-card" key={product.id}>
                   <div className="showcase-card-media">
                     <Image
@@ -140,7 +140,7 @@ export function ShowcaseSection() {
                 className="showcase-track showcase-track-desktop"
                 style={{ x }}
               >
-                {showcaseProducts.map((product) => (
+                {products.map((product) => (
                   <article className="showcase-card" key={product.id}>
                     <div className="showcase-card-media">
                       <Image
@@ -159,7 +159,7 @@ export function ShowcaseSection() {
               </m.div>
 
               <div className="showcase-track showcase-track-mobile">
-                {showcaseProducts.map((product) => (
+                {products.map((product) => (
                   <article className="showcase-card" key={`mobile-${product.id}`}>
                     <div className="showcase-card-media">
                       <Image

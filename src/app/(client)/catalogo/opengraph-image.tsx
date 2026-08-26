@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import fs from "node:fs";
 import path from "node:path";
 
-export const alt = "RF Representa - Representação Comercial Altenburg em Mato Grosso";
+export const alt = "Catálogo Altenburg RF Representa - Mix completo para lojistas em MT";
 
 export const size = {
   width: 1200,
@@ -11,7 +11,7 @@ export const size = {
 
 export const contentType = "image/png";
 
-export default function OpenGraphImage() {
+export default function CatalogOpenGraphImage() {
   const logoPath = path.join(
     process.cwd(),
     "public",
@@ -27,7 +27,7 @@ export default function OpenGraphImage() {
     "public",
     "images",
     "altenburg",
-    "hero-edredom.jpg",
+    "cama-serenity.jpg",
   );
   const bgPhotoBase64 = fs.readFileSync(bgPhotoPath).toString("base64");
   const bgPhotoSrc = `data:image/jpeg;base64,${bgPhotoBase64}`;
@@ -44,33 +44,33 @@ export default function OpenGraphImage() {
         overflow: "hidden",
       }}
     >
-      {/* Background Hero Photo on the right */}
+      {/* Background Photo on the right side */}
       <img
         src={bgPhotoSrc}
-        alt="RF Representa Altenburg"
+        alt="Altenburg Coleções"
         style={{
           position: "absolute",
           right: 0,
           top: 0,
-          width: 700,
+          width: 650,
           height: 630,
           objectFit: "cover",
           objectPosition: "center",
         }}
       />
 
-      {/* Dark gradient overlay */}
+      {/* Dark gradient overlay blending left to right */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           display: "flex",
           background:
-            "linear-gradient(90deg, #0e1a14 0%, #0e1a14 42%, rgba(14,26,20,0.92) 58%, rgba(14,26,20,0.45) 85%, transparent 100%)",
+            "linear-gradient(90deg, #0f1c16 0%, #0f1c16 45%, rgba(15,28,22,0.92) 60%, rgba(15,28,22,0.45) 85%, transparent 100%)",
         }}
       />
 
-      {/* Red vertical brand accent line */}
+      {/* Red vertical brand accent strip */}
       <div
         style={{
           position: "absolute",
@@ -83,7 +83,7 @@ export default function OpenGraphImage() {
         }}
       />
 
-      {/* Content */}
+      {/* Main Content Area */}
       <div
         style={{
           position: "relative",
@@ -96,7 +96,7 @@ export default function OpenGraphImage() {
           height: "100%",
         }}
       >
-        {/* Header */}
+        {/* Header: Brand Logo & Tag */}
         <div
           style={{
             display: "flex",
@@ -131,7 +131,7 @@ export default function OpenGraphImage() {
                 fontWeight: 600,
               }}
             >
-              Mato Grosso
+              Altenburg Mato Grosso
             </span>
           </div>
 
@@ -150,11 +150,11 @@ export default function OpenGraphImage() {
               textTransform: "uppercase",
             }}
           >
-            Representação Altenburg
+            Catálogo Digital
           </div>
         </div>
 
-        {/* Center */}
+        {/* Center: Title & Categories */}
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <span
             style={{
@@ -165,7 +165,7 @@ export default function OpenGraphImage() {
               textTransform: "uppercase",
             }}
           >
-            Atendimento Comercial Exclusivo
+            Portfólio Completo para Lojistas
           </span>
 
           <div
@@ -174,27 +174,36 @@ export default function OpenGraphImage() {
               fontSize: 54,
               fontWeight: 800,
               lineHeight: 1.1,
-              maxWidth: 740,
+              maxWidth: 720,
               display: "flex",
             }}
           >
-            Conforto e qualidade para o mix da sua loja.
+            Encontre o mix certo para a sua loja.
           </div>
 
-          <p
-            style={{
-              color: "rgba(255, 255, 255, 0.78)",
-              fontSize: 18,
-              lineHeight: 1.4,
-              maxWidth: 640,
-              margin: 0,
-            }}
-          >
-            Coleções de cama, banho, travesseiros e edredons Altenburg para lojistas em todo o estado.
-          </p>
+          {/* Category Badges */}
+          <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
+            {["Cama", "Colchas & Edredons", "Travesseiros", "Banho"].map((cat) => (
+              <div
+                key={cat}
+                style={{
+                  display: "flex",
+                  background: "rgba(255, 255, 255, 0.12)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  borderRadius: 8,
+                  padding: "6px 14px",
+                  color: "#ffffff",
+                  fontSize: 14,
+                  fontWeight: 600,
+                }}
+              >
+                {cat}
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Footer */}
+        {/* Footer: Territory & CTA */}
         <div
           style={{
             display: "flex",
@@ -205,9 +214,12 @@ export default function OpenGraphImage() {
             width: "100%",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <span style={{ color: "#ffffff", fontSize: 16, fontWeight: 600 }}>
-              Fale direto com a representação comercial
+              Atendimento exclusivo para lojistas em MT
+            </span>
+            <span style={{ color: "rgba(255, 255, 255, 0.6)", fontSize: 13 }}>
+              Variações, tamanhos, cores e especificações técnicas
             </span>
           </div>
 
@@ -223,7 +235,7 @@ export default function OpenGraphImage() {
               fontWeight: 700,
             }}
           >
-            Acessar Site & Catálogo →
+            Ver Catálogo Online →
           </div>
         </div>
       </div>

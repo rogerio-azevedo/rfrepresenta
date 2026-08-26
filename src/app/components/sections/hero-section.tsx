@@ -6,7 +6,6 @@ import {
   m,
   useReducedMotion,
   useScroll,
-  useSpring,
   useTransform,
 } from "motion/react";
 import { useRef } from "react";
@@ -18,6 +17,7 @@ import { siteConfig } from "../../site-config";
 
 type HeroSectionProps = {
   whatsappUrl: string;
+  heroImageUrl?: string;
 };
 
 const heroFacts = [
@@ -26,7 +26,7 @@ const heroFacts = [
   { strong: "Contato direto", span: siteConfig.contact.heroFactLabel },
 ];
 
-export function HeroSection({ whatsappUrl }: HeroSectionProps) {
+export function HeroSection({ whatsappUrl, heroImageUrl = "/images/altenburg/hero-edredom.jpg" }: HeroSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
@@ -44,7 +44,7 @@ export function HeroSection({ whatsappUrl }: HeroSectionProps) {
       <Parallax className="hero-image-wrap" speed={0.12} scale={[1.06, 1]}>
         <Image
           className="hero-image"
-          src="/images/altenburg/hero-edredom.jpg"
+          src={heroImageUrl}
           alt="Quarto com roupa de cama e edredom Altenburg"
           fill
           priority

@@ -15,9 +15,21 @@ import {
 } from "@/server/dal/catalog";
 
 export const metadata = {
-  title: "Catálogo Altenburg | RF Representa",
+  title: "Catálogo Completo Altenburg | RF Representa",
   description:
-    "Consulte produtos, variações e fichas técnicas Altenburg disponíveis pela RF Representa.",
+    "Explore o catálogo completo de produtos Altenburg: Cama, Banho, Colchas, Edredons e Travesseiros para lojistas em Mato Grosso.",
+  openGraph: {
+    title: "Catálogo Completo Altenburg | RF Representa",
+    description:
+      "Explore o catálogo completo de produtos Altenburg: Cama, Banho, Colchas, Edredons e Travesseiros para lojistas em Mato Grosso.",
+    url: "/catalogo",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Catálogo Completo Altenburg | RF Representa",
+    description:
+      "Explore o catálogo completo de produtos Altenburg: Cama, Banho, Colchas, Edredons e Travesseiros para lojistas em Mato Grosso.",
+  },
 };
 
 function queryFromParams(params: Record<string, string | string[] | undefined>) {

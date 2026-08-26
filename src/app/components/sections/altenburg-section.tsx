@@ -9,15 +9,16 @@ import { siteConfig } from "../../site-config";
 
 type AltenburgSectionProps = {
   whatsappUrl: string;
+  mediaImageUrl?: string;
 };
 
-export function AltenburgSection({ whatsappUrl }: AltenburgSectionProps) {
+export function AltenburgSection({ whatsappUrl, mediaImageUrl = "/images/altenburg/cama-serenity.jpg" }: AltenburgSectionProps) {
   return (
     <section className="altenburg-section" id="altenburg">
       <div className="altenburg-frame">
         <div className="altenburg-media">
           <Image
-            src="/images/altenburg/cama-serenity.jpg"
+            src={mediaImageUrl}
             alt="Cama Altenburg com estampa botânica em ambiente acolhedor"
             fill
             sizes="(max-width: 1080px) 100vw, 590px"

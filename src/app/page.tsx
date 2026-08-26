@@ -16,6 +16,7 @@ import { MobileWhatsApp } from "./components/mobile-whatsapp";
 import { buildMapsUrl, buildWhatsAppUrl, siteConfig } from "./site-config";
 import { listFeaturedCatalogCollections } from "@/server/dal/catalog";
 import { getR2ObjectUrl } from "@/server/catalog/r2";
+import { showcaseProductDefinitions } from "./showcase-products";
 
 const faqs = [
   {
@@ -57,14 +58,25 @@ export default async function Home() {
   const whatsappUrl = buildWhatsAppUrl();
   const mapsUrl = buildMapsUrl();
   const catalogCollections = await listFeaturedCatalogCollections();
+
   const previewCategories = catalogCollections.map((collection) => ({
     id: collection.slug,
     name: collection.name,
     description: collection.description,
-    image: collection.imageKey ? getR2ObjectUrl(collection.imageKey) : "/images/altenburg/colcha-online.jpg",
+    image: collection.imageKey
+      ? getR2ObjectUrl(collection.imageKey)
+      : getR2ObjectUrl("assets/landing/colcha-online.jpg"),
     imageAlt: `Seleção ${collection.name} Altenburg`,
     href: `/catalogo?collection=${collection.slug}`,
     count: collection.familyCount,
+  }));
+
+  const showcaseProducts = showcaseProductDefinitions.map((item) => ({
+    id: item.id,
+    name: item.name,
+    type: item.type,
+    imageAlt: item.imageAlt,
+    image: getR2ObjectUrl(item.r2Key),
   }));
 
   return (
@@ -73,15 +85,21 @@ export default async function Home() {
       <ScrollProgress />
       <SiteHeader whatsappUrl={whatsappUrl} />
 
-      <HeroSection whatsappUrl={whatsappUrl} />
+      <HeroSection
+        whatsappUrl={whatsappUrl}
+        heroImageUrl={getR2ObjectUrl("assets/landing/hero-edredom.jpg")}
+      />
 
       <Marquee items={marqueeItems} className="hero-marquee" />
 
       <PortfolioSection categories={previewCategories} />
 
-      <ShowcaseSection />
+      <ShowcaseSection products={showcaseProducts} />
 
-      <AltenburgSection whatsappUrl={whatsappUrl} />
+      <AltenburgSection
+        whatsappUrl={whatsappUrl}
+        mediaImageUrl={getR2ObjectUrl("assets/landing/cama-serenity.jpg")}
+      />
 
       <ServiceSection />
 
@@ -91,7 +109,10 @@ export default async function Home() {
 
       <FaqSection items={faqs} />
 
-      <FinalCtaSection whatsappUrl={whatsappUrl} />
+      <FinalCtaSection
+        whatsappUrl={whatsappUrl}
+        mediaImageUrl={getR2ObjectUrl("assets/landing/edredom-moment.jpg")}
+      />
 
       <footer className="site-footer">
         <div className="page-shell footer-main">
