@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { OpeningCurtain } from "./components/opening-curtain";
 import { Marquee } from "./components/motion/marquee";
 import { ScrollProgress } from "./components/scroll-progress";
 import { AltenburgSection } from "./components/sections/altenburg-section";
@@ -81,7 +80,6 @@ export default async function Home() {
 
   return (
     <main>
-      <OpeningCurtain />
       <ScrollProgress />
       <SiteHeader whatsappUrl={whatsappUrl} />
 

@@ -71,7 +71,7 @@ export function ShowcaseSection({ products = [] }: { products?: ShowcaseProduct[
     });
 
     const ultrawideQuery = window.matchMedia(
-      "(min-width: 1600px) and (min-height: 900px)",
+      "(min-width: 1600px) and (min-height: 1200px)",
     );
     ultrawideQuery.addEventListener("change", update);
     window.addEventListener("resize", update);
@@ -147,7 +147,7 @@ export function ShowcaseSection({ products = [] }: { products?: ShowcaseProduct[
                         src={product.image}
                         alt={product.imageAlt}
                         fill
-                        sizes="(min-width: 1600px) 480px, 300px"
+                        sizes="(min-width: 1600px) and (min-height: 1200px) 420px, 300px"
                       />
                     </div>
                     <div className="showcase-card-copy">

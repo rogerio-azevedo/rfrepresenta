@@ -784,14 +784,14 @@ img {
     line-height: 1.2;
 }
 
-@media (min-width: 1600px) and (min-height: 900px) {
+@media (min-width: 1600px) and (min-height: 1200px) {
     .showcase-section {
-        --showcase-card-width: 480px;
+        --showcase-card-width: 420px;
     }
 
     .showcase-card-media {
         aspect-ratio: auto;
-        height: min(720px, calc(100dvh - var(--header-height) - 250px));
+        height: min(560px, calc(100dvh - var(--header-height) - 380px));
     }
 
     .showcase-card-copy {
@@ -1274,37 +1274,6 @@ img {
 
 .final-cta-button-wrap {
     display: inline-block;
-}
-
-.opening-curtain {
-    position: fixed;
-    z-index: 100;
-    inset: 0;
-    overflow: hidden;
-    pointer-events: none;
-}
-
-.opening-curtain-panel {
-    position: absolute;
-    top: 0;
-    width: 50%;
-    height: 100%;
-    background: var(--ink);
-}
-
-.opening-curtain-panel-left {
-    left: 0;
-}
-
-.opening-curtain-panel-right {
-    right: 0;
-}
-
-.opening-curtain-mark {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
 }
 
 .final-cta-shade {
