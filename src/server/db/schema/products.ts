@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   check,
+  decimal,
   index,
   integer,
   jsonb,
@@ -16,8 +17,18 @@ import {
 } from "drizzle-orm/pg-core";
 import { users } from "./users";
 
-export const productSourceEnum = pgEnum("product_source", ["MANUAL", "ALTENBURG"]);
-export const catalogFamilyReviewEnum = pgEnum("catalog_family_review", ["AUTO_APPROVED", "NEEDS_REVIEW", "REVIEWED"]);
+export const productSourceEnum = pgEnum("product_source", [
+  "MANUAL",
+  "ALTENBURG",
+  "CSV",
+  "ERP",
+]);
+
+export const familyReviewStatusEnum = pgEnum("family_review_status", [
+  "AUTO_APPROVED",
+  "NEEDS_REVIEW",
+  "REVIEWED",
+]);
 
 export const productFamilies = pgTable(
   "product_families",
@@ -26,16 +37,21 @@ export const productFamilies = pgTable(
     slug: text("slug").notNull(),
     name: text("name").notNull(),
     description: text("description").notNull().default(""),
-    brand: text("brand").notNull(),
-    reviewStatus: catalogFamilyReviewEnum("review_status").notNull().default("NEEDS_REVIEW"),
+    brand: text("brand").notNull().default("Altenburg"),
+    reviewStatus: familyReviewStatusEnum("review_status")
+      .notNull()
+      .default("AUTO_APPROVED"),
     defaultProductId: uuid("default_product_id"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     uniqueIndex("product_families_slug_unique").on(table.slug),
-    index("product_families_review_idx").on(table.reviewStatus),
-    index("product_families_brand_name_idx").on(table.brand, table.name),
+    index("product_families_name_idx").on(table.name),
   ],
 );
 
@@ -43,45 +59,65 @@ export const products = pgTable(
   "products",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    source: productSourceEnum("source").notNull().default("MANUAL"),
-    externalId: text("external_id"),
     slug: text("slug").notNull(),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
     reference: text("reference"),
     ean: text("ean"),
-    name: text("name").notNull(),
-    searchNormalized: text("search_normalized").notNull().default(""),
-    description: text("description").notNull().default(""),
-    brand: text("brand").notNull(),
+    brand: text("brand").notNull().default("Altenburg"),
+    cost: numeric("cost", { precision: 12, scale: 2 }),
     sourcePrice: numeric("source_price", { precision: 12, scale: 2 }),
     salePrice: numeric("sale_price", { precision: 12, scale: 2 }),
-    cost: numeric("cost", { precision: 12, scale: 2 }),
-    specifications: jsonb("specifications").$type<Record<string, unknown>>().notNull().default({}),
-    isPublic: boolean("is_public").notNull().default(false),
+    source: productSourceEnum("source").notNull().default("MANUAL"),
+    externalId: text("external_id"),
+    rawPayload: text("raw_payload"),
+    isPublic: boolean("is_public").notNull().default(true),
+    specs: text("specs").notNull().default("{}"),
+    specifications: jsonb("specifications")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    searchNormalized: text("search_normalized").notNull().default(""),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
-    deletedBy: uuid("deleted_by").references(() => users.id, { onDelete: "set null" }),
-    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
-    updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    deletedBy: uuid("deleted_by").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdBy: uuid("created_by").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    updatedBy: uuid("updated_by").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     uniqueIndex("products_slug_unique").on(table.slug),
     uniqueIndex("products_source_external_id_unique")
       .on(table.source, table.externalId)
       .where(sql`${table.externalId} is not null`),
-    uniqueIndex("products_reference_unique")
-      .on(table.reference)
-      .where(sql`${table.reference} is not null`),
-    uniqueIndex("products_ean_unique")
-      .on(table.ean)
-      .where(sql`${table.ean} is not null`),
+    index("products_reference_idx").on(table.reference),
+    index("products_ean_idx").on(table.ean),
     index("products_public_deleted_idx").on(table.isPublic, table.deletedAt),
     index("products_brand_idx").on(table.brand),
     index("products_name_idx").on(table.name),
     index("products_search_normalized_idx").on(table.searchNormalized),
-    check("products_source_price_non_negative", sql`${table.sourcePrice} is null or ${table.sourcePrice} >= 0`),
-    check("products_sale_price_non_negative", sql`${table.salePrice} is null or ${table.salePrice} >= 0`),
-    check("products_cost_non_negative", sql`${table.cost} is null or ${table.cost} >= 0`),
+    check(
+      "products_source_price_non_negative",
+      sql`${table.sourcePrice} is null or ${table.sourcePrice} >= 0`,
+    ),
+    check(
+      "products_sale_price_non_negative",
+      sql`${table.salePrice} is null or ${table.salePrice} >= 0`,
+    ),
+    check(
+      "products_cost_non_negative",
+      sql`${table.cost} is null or ${table.cost} >= 0`,
+    ),
   ],
 );
 
@@ -99,7 +135,10 @@ export const productFamilyMembers = pgTable(
   (table) => [
     primaryKey({ columns: [table.familyId, table.productId] }),
     uniqueIndex("product_family_members_product_unique").on(table.productId),
-    index("product_family_members_family_order_idx").on(table.familyId, table.sortOrder),
+    index("product_family_members_family_order_idx").on(
+      table.familyId,
+      table.sortOrder,
+    ),
   ],
 );
 
@@ -113,14 +152,21 @@ export const catalogCategories = pgTable(
     parentId: uuid("parent_id"),
     sortOrder: integer("sort_order").notNull().default(0),
     isActive: boolean("is_active").notNull().default(true),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     uniqueIndex("catalog_categories_path_unique").on(table.path),
     uniqueIndex("catalog_categories_slug_unique").on(table.slug),
     index("catalog_categories_parent_idx").on(table.parentId),
-    index("catalog_categories_active_order_idx").on(table.isActive, table.sortOrder),
+    index("catalog_categories_active_order_idx").on(
+      table.isActive,
+      table.sortOrder,
+    ),
   ],
 );
 
@@ -151,12 +197,20 @@ export const catalogCollections = pgTable(
     sortOrder: integer("sort_order").notNull().default(0),
     isFeatured: boolean("is_featured").notNull().default(false),
     isActive: boolean("is_active").notNull().default(true),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     uniqueIndex("catalog_collections_slug_unique").on(table.slug),
-    index("catalog_collections_featured_order_idx").on(table.isFeatured, table.isActive, table.sortOrder),
+    index("catalog_collections_featured_order_idx").on(
+      table.isFeatured,
+      table.isActive,
+      table.sortOrder,
+    ),
   ],
 );
 
@@ -187,8 +241,13 @@ export const productFacets = pgTable(
     valueLabel: text("value_label").notNull(),
   },
   (table) => [
-    primaryKey({ columns: [table.productId, table.facetKey, table.valueNormalized] }),
-    index("product_facets_lookup_idx").on(table.facetKey, table.valueNormalized),
+    primaryKey({
+      columns: [table.productId, table.facetKey, table.valueNormalized],
+    }),
+    index("product_facets_lookup_idx").on(
+      table.facetKey,
+      table.valueNormalized,
+    ),
   ],
 );
 
@@ -205,11 +264,20 @@ export const productImages = pgTable(
     sizeBytes: integer("size_bytes").notNull(),
     altText: text("alt_text").notNull().default(""),
     position: integer("position").notNull().default(0),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
-    uniqueIndex("product_images_object_key_unique").on(table.objectKey),
-    uniqueIndex("product_images_product_position_unique").on(table.productId, table.position),
+    index("product_images_object_key_idx").on(table.objectKey),
+    uniqueIndex("product_images_product_object_key_unique").on(
+      table.productId,
+      table.objectKey,
+    ),
+    uniqueIndex("product_images_product_position_unique").on(
+      table.productId,
+      table.position,
+    ),
     index("product_images_product_idx").on(table.productId, table.position),
     check("product_images_size_positive", sql`${table.sizeBytes} > 0`),
     check("product_images_position_non_negative", sql`${table.position} >= 0`),
@@ -221,12 +289,19 @@ export const r2DeletionQueue = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     objectKey: text("object_key").notNull(),
+    status: text("status").notNull().default("PENDING"),
     attempts: integer("attempts").notNull().default(0),
     lastError: text("last_error"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
-  (table) => [uniqueIndex("r2_deletion_queue_object_key_unique").on(table.objectKey)],
+  (table) => [
+    index("r2_deletion_queue_status_idx").on(table.status, table.attempts),
+  ],
 );
 
 export type Product = typeof products.$inferSelect;

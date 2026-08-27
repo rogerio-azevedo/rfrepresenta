@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  animate,
-  useInView,
-  useMotionValueEvent,
-  useReducedMotion,
-} from "motion/react";
+import { animate, useInView, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { DURATION, EASE_OUT_EXPO } from "../../motion";
 
@@ -27,15 +22,12 @@ export function Counter({
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-10% 0px" });
   const prefersReducedMotion = useReducedMotion();
-  const [display, setDisplay] = useState(0);
+  const [display, setDisplay] = useState(() =>
+    prefersReducedMotion ? value : 0,
+  );
 
   useEffect(() => {
-    if (!isInView) return;
-
-    if (prefersReducedMotion) {
-      setDisplay(value);
-      return;
-    }
+    if (!isInView || prefersReducedMotion) return;
 
     const controls = animate(0, value, {
       duration,
@@ -49,7 +41,7 @@ export function Counter({
   return (
     <span ref={ref} className={className}>
       {prefix}
-      {display}
+      {prefersReducedMotion ? value : display}
       {suffix}
     </span>
   );

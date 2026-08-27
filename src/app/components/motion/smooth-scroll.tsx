@@ -7,20 +7,20 @@ import {
   createContext,
   useContext,
   useEffect,
-  useState,
+  useRef,
   type ReactNode,
 } from "react";
 
 type SmoothScrollContextValue = {
-  lenis: Lenis | null;
+  getLenis: () => Lenis | null;
 };
 
 const SmoothScrollContext = createContext<SmoothScrollContextValue>({
-  lenis: null,
+  getLenis: () => null,
 });
 
 export function useLenis() {
-  return useContext(SmoothScrollContext).lenis;
+  return useContext(SmoothScrollContext).getLenis();
 }
 
 type SmoothScrollProviderProps = {
@@ -28,7 +28,7 @@ type SmoothScrollProviderProps = {
 };
 
 export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
-  const [lenis, setLenis] = useState<Lenis | null>(null);
+  const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia(
@@ -45,7 +45,7 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
       smoothWheel: true,
     });
 
-    setLenis(instance);
+    lenisRef.current = instance;
 
     let frameId = 0;
     const raf = (time: number) => {
@@ -58,12 +58,12 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
     return () => {
       cancelAnimationFrame(frameId);
       instance.destroy();
-      setLenis(null);
+      lenisRef.current = null;
     };
   }, []);
 
   return (
-    <SmoothScrollContext.Provider value={{ lenis }}>
+    <SmoothScrollContext.Provider value={{ getLenis: () => lenisRef.current }}>
       <MotionConfig reducedMotion="user">{children}</MotionConfig>
     </SmoothScrollContext.Provider>
   );

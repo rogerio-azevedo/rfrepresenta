@@ -15,6 +15,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "catalog:sync": "node scripts/sync-altenburg-catalog.mjs",
+    "catalog:sync:b2b": "node scripts/sync-altenburg-b2b-catalog.mjs",
     "catalog:import": "tsx scripts/import-altenburg-catalog.ts",
     "catalog:prepare": "tsx scripts/prepare-catalog.ts",
     "catalog:cleanup-r2": "tsx scripts/cleanup-r2.ts",
