@@ -1,11 +1,12 @@
 import "server-only";
 
-import { and, asc, count, countDistinct, eq, ilike, inArray, sql } from "drizzle-orm";
+import { and, asc, count, countDistinct, eq, ilike, inArray, isNull, notInArray, sql } from "drizzle-orm";
 import { db } from "@/server/db";
 import {
   catalogCategories,
   catalogCollectionCategories,
   catalogCollections,
+  productCategories,
   productFamilies,
   productFamilyMembers,
   productImages,
@@ -15,6 +16,7 @@ import { requireAdminContext } from "@/server/auth/context";
 import { ResourceNotFoundError } from "@/server/auth/errors";
 import { familySlug } from "@/server/catalog/families";
 import { slugify } from "@/server/catalog/normalization";
+import { EDITORIAL_COLLECTION_SLUGS, isEditorialCollectionSlug } from "@/server/catalog/b2b-categories";
 import type { z } from "zod";
 import { collectionInputSchema, familyInputSchema } from "@/schemas/products";
 
@@ -136,7 +138,7 @@ export async function splitFamilyRecord(sourceFamilyId: string, productIds: stri
 
 export async function listAdminCollections() {
   await requireAdminContext();
-  return db.select({
+  const rows = await db.select({
     id: catalogCollections.id,
     slug: catalogCollections.slug,
     name: catalogCollections.name,
@@ -150,6 +152,43 @@ export async function listAdminCollections() {
     .leftJoin(catalogCollectionCategories, eq(catalogCollectionCategories.collectionId, catalogCollections.id))
     .groupBy(catalogCollections.id)
     .orderBy(asc(catalogCollections.sortOrder), asc(catalogCollections.name));
+
+  const departmentCounts = await db
+    .select({
+      id: catalogCollections.id,
+      familyCount: countDistinct(productFamilies.id),
+    })
+    .from(catalogCollections)
+    .leftJoin(catalogCollectionCategories, eq(catalogCollectionCategories.collectionId, catalogCollections.id))
+    .leftJoin(productCategories, eq(productCategories.categoryId, catalogCollectionCategories.categoryId))
+    .leftJoin(products, and(eq(products.id, productCategories.productId), eq(products.isPublic, true), isNull(products.deletedAt)))
+    .leftJoin(productFamilyMembers, eq(productFamilyMembers.productId, products.id))
+    .leftJoin(productFamilies, eq(productFamilies.id, productFamilyMembers.familyId))
+    .where(inArray(catalogCollections.slug, [...EDITORIAL_COLLECTION_SLUGS]))
+    .groupBy(catalogCollections.id);
+
+  const lineCounts = await db
+    .select({
+      id: catalogCollections.id,
+      familyCount: countDistinct(productFamilies.id),
+    })
+    .from(catalogCollections)
+    .leftJoin(productFamilies, eq(productFamilies.collectionId, catalogCollections.id))
+    .leftJoin(productFamilyMembers, eq(productFamilyMembers.familyId, productFamilies.id))
+    .leftJoin(products, and(eq(products.id, productFamilyMembers.productId), eq(products.isPublic, true), isNull(products.deletedAt)))
+    .where(notInArray(catalogCollections.slug, [...EDITORIAL_COLLECTION_SLUGS]))
+    .groupBy(catalogCollections.id);
+
+  const familyCountById = new Map<string, number>([
+    ...departmentCounts.map((row) => [row.id, Number(row.familyCount)] as const),
+    ...lineCounts.map((row) => [row.id, Number(row.familyCount)] as const),
+  ]);
+
+  return rows.map((row) => ({
+    ...row,
+    kind: isEditorialCollectionSlug(row.slug) ? "department" as const : "line" as const,
+    familyCount: familyCountById.get(row.id) ?? 0,
+  }));
 }
 
 export async function getAdminCollection(collectionId: string) {
@@ -157,31 +196,35 @@ export async function getAdminCollection(collectionId: string) {
   const [collection] = await db.select().from(catalogCollections).where(eq(catalogCollections.id, collectionId)).limit(1);
   if (!collection) throw new ResourceNotFoundError();
   const categoryRows = await db.select({ id: catalogCollectionCategories.categoryId }).from(catalogCollectionCategories).where(eq(catalogCollectionCategories.collectionId, collectionId));
-  return { ...collection, categoryIds: categoryRows.map((row) => row.id) };
+  return { ...collection, categoryIds: categoryRows.map((row) => row.id), kind: isEditorialCollectionSlug(collection.slug) ? "department" as const : "line" as const };
 }
 
 export async function saveCollectionRecord(collectionId: string | null, input: CollectionInput) {
   await requireAdminContext();
   return db.transaction(async (transaction) => {
-    if (input.isFeatured) {
+    const normalizedSlug = slugify(input.slug);
+    const isDepartment = isEditorialCollectionSlug(normalizedSlug);
+    if (isDepartment && input.isFeatured) {
       const [{ total }] = await transaction.select({ total: count() }).from(catalogCollections).where(and(eq(catalogCollections.isFeatured, true), collectionId ? sql`${catalogCollections.id} <> ${collectionId}` : undefined));
       if (Number(total) >= 4) throw new Error("A vitrine da landing aceita no maximo quatro colecoes.");
     }
-    const normalizedSlug = slugify(input.slug);
-    const values = { ...input, slug: normalizedSlug, updatedAt: new Date() };
+    const { categoryIds, ...collectionInput } = input;
+    const values = { ...collectionInput, slug: normalizedSlug, isFeatured: isDepartment && input.isFeatured, updatedAt: new Date() };
     const [collection] = collectionId
       ? await transaction.update(catalogCollections).set(values).where(eq(catalogCollections.id, collectionId)).returning()
       : await transaction.insert(catalogCollections).values(values).returning();
     if (!collection) throw new ResourceNotFoundError();
     await transaction.delete(catalogCollectionCategories).where(eq(catalogCollectionCategories.collectionId, collection.id));
-    if (input.categoryIds.length) await transaction.insert(catalogCollectionCategories).values(input.categoryIds.map((categoryId) => ({ collectionId: collection.id, categoryId })));
+    if (isDepartment && categoryIds.length) {
+      await transaction.insert(catalogCollectionCategories).values(categoryIds.map((categoryId) => ({ collectionId: collection.id, categoryId })));
+    }
     return collection;
   });
 }
 
 export async function listAllCategoriesForAdmin() {
   await requireAdminContext();
-  return db.select().from(catalogCategories).orderBy(asc(catalogCategories.path));
+  return db.select().from(catalogCategories).where(eq(catalogCategories.isActive, true)).orderBy(asc(catalogCategories.path));
 }
 
 export type CommercialPriceRow = { reference?: string; ean?: string; salePrice: number | null; cost?: number | null };

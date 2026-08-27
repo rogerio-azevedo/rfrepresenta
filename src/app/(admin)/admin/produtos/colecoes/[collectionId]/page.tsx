@@ -12,5 +12,5 @@ export default async function CollectionPage({ params }: { params: Promise<{ col
   try { collection = await getAdminCollection(collectionId); } catch (error) { if (error instanceof ResourceNotFoundError) notFound(); throw error; }
   const categories = await listAllCategoriesForAdmin();
   const defaults = { ...collection, imageUrl: collection.imageKey ? getR2ObjectUrl(collection.imageKey) : null };
-  return <><PageHeading title={collection.name} description="Configuração da coleção editorial." /><CatalogAdminNav current="/admin/produtos/colecoes" /><CollectionForm defaults={defaults} categories={categories.map(({ id, path }) => ({ id, path }))} /></>;
+  return <><PageHeading title={collection.name} description={collection.kind === "department" ? "Departamento da vitrine da landing." : "Linha B2B do catálogo."} /><CatalogAdminNav current="/admin/produtos/colecoes" /><CollectionForm defaults={defaults} categories={categories.map(({ id, path }) => ({ id, path }))} showCategoryMapping={collection.kind === "department"} showFeatured={collection.kind === "department"} /></>;
 }

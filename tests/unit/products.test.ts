@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildProductSearchText, extractFacets, normalizeFacetValue, slugify } from "@/server/catalog/normalization";
 import { deriveFamilyName, familyCandidateKey, familySlug } from "@/server/catalog/families";
 import { catalogQuerySchema, productInputSchema, productImageUploadSchema } from "@/schemas/products";
+import { getCategoryPath, isEditorialCollectionSlug, resolveDepartmentCoverKey, toCatalogLineSlug, toJsonLineSlug } from "@/server/catalog/b2b-categories";
 
 describe("product normalization", () => {
   it("creates stable slugs and normalized facet values", () => {
@@ -80,5 +81,32 @@ describe("product schemas", () => {
     expect(query.color).toEqual(["azul", "branco"]);
     expect(query.page).toBe(2);
     expect(query.pageSize).toBe(24);
+  });
+});
+
+describe("b2b category mapping", () => {
+  it("uses editorial covers unless an admin collection cover was uploaded", () => {
+    expect(resolveDepartmentCoverKey("banho", null)).toBe("/images/altenburg/banho-gyo.jpg");
+    expect(resolveDepartmentCoverKey("travesseiros", "products/altenburg/1.jpg")).toBe("assets/landing/showcase/travesseiro-plumi-gold.jpg");
+    expect(resolveDepartmentCoverKey("cama", "collections/abc.jpg")).toBe("collections/abc.jpg");
+  });
+
+  it("keeps editorial slugs and prefixes colliding B2B lines", () => {
+    expect(isEditorialCollectionSlug("cama")).toBe(true);
+    expect(isEditorialCollectionSlug("banho")).toBe(true);
+    expect(isEditorialCollectionSlug("linha-banho")).toBe(false);
+    expect(toCatalogLineSlug("banho")).toBe("linha-banho");
+    expect(toCatalogLineSlug("travesseiros")).toBe("linha-travesseiros");
+    expect(toCatalogLineSlug("cetim-sublime-300")).toBe("cetim-sublime-300");
+    expect(toJsonLineSlug("linha-banho")).toBe("banho");
+  });
+
+  it("derives B2B category paths from collection slug and item type", () => {
+    expect(getCategoryPath("cetim-sublime-300", "EDREDOM")).toBe("Cama/Edredons");
+    expect(getCategoryPath("cetim-sublime-300", "JOGO DE COLCHA")).toBe("Cama/Colchas");
+    expect(getCategoryPath("banho", "BANHO")).toBe("Banho/Toalhas de Banho");
+    expect(getCategoryPath("linha-banho", "ROSTO")).toBe("Banho/Toalhas de Rosto");
+    expect(getCategoryPath("travesseiros", "PRODUTO")).toBe("Travesseiros");
+    expect(getCategoryPath("linha-travesseiros", "PRODUTO")).toBe("Travesseiros");
   });
 });

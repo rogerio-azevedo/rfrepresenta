@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   check,
   decimal,
@@ -24,7 +25,7 @@ export const productSourceEnum = pgEnum("product_source", [
   "ERP",
 ]);
 
-export const familyReviewStatusEnum = pgEnum("family_review_status", [
+export const familyReviewStatusEnum = pgEnum("catalog_family_review", [
   "AUTO_APPROVED",
   "NEEDS_REVIEW",
   "REVIEWED",
@@ -42,6 +43,9 @@ export const productFamilies = pgTable(
       .notNull()
       .default("AUTO_APPROVED"),
     defaultProductId: uuid("default_product_id"),
+    collectionId: uuid("collection_id").references((): AnyPgColumn => catalogCollections.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -51,7 +55,9 @@ export const productFamilies = pgTable(
   },
   (table) => [
     uniqueIndex("product_families_slug_unique").on(table.slug),
-    index("product_families_name_idx").on(table.name),
+    index("product_families_review_idx").on(table.reviewStatus),
+    index("product_families_brand_name_idx").on(table.brand, table.name),
+    index("product_families_collection_idx").on(table.collectionId),
   ],
 );
 

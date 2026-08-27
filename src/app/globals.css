@@ -618,6 +618,14 @@ img {
     gap: 80px;
 }
 
+.portfolio-section.section-pad {
+    padding-block: clamp(36px, 4.2vh, 56px);
+}
+
+.portfolio-section .heading-split {
+    margin-bottom: clamp(28px, 3.2vh, 44px);
+}
+
 .heading-split > p,
 .service-heading > p:last-child,
 .faq-heading > p:last-child {
@@ -642,7 +650,7 @@ img {
 .category-grid .clip-reveal,
 .category-card {
     position: relative;
-    min-height: 410px;
+    min-height: clamp(280px, 33dvh, 360px);
     overflow: hidden;
     border-radius: 6px;
     background: #cfd5d1;
@@ -654,13 +662,15 @@ img {
 
 .category-card-inner {
     position: relative;
-    min-height: 410px;
+    height: 100%;
+    min-height: inherit;
     overflow: hidden;
     border-radius: 6px;
 }
 
 .category-card-inner img {
     object-fit: cover;
+    object-position: center;
     transition: transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -676,10 +686,6 @@ img {
 .category-card-2,
 .category-card-3 {
     grid-column: span 5;
-}
-
-.category-card-4 .category-card-inner img {
-    object-position: center 42%;
 }
 
 .showcase-section {
@@ -846,18 +852,14 @@ img {
     }
 }
 
-.category-card-4 img {
-    object-position: center 42%;
-}
-
 .category-copy {
     position: absolute;
     right: 0;
     bottom: 0;
     left: 0;
     display: grid;
-    min-height: 126px;
-    padding: 22px 24px;
+    min-height: 0;
+    padding: 18px 20px;
     grid-template-columns: auto 1fr;
     grid-template-rows: auto auto;
     column-gap: 16px;
@@ -883,9 +885,14 @@ img {
 .category-copy p {
     max-width: 460px;
     margin: 7px 0 0;
+    overflow: hidden;
     color: rgb(255 255 255 / 70%);
     font-size: 13px;
     line-height: 1.55;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
 }
 
 .altenburg-section {
@@ -1504,7 +1511,7 @@ img {
     }
 
     .category-card {
-        min-height: 370px;
+        min-height: clamp(240px, 28vh, 330px);
         grid-column: span 6;
     }
 
@@ -1711,13 +1718,13 @@ img {
     .category-card-2,
     .category-card-3,
     .category-card-4 {
-        min-height: 390px;
+        min-height: 300px;
         grid-column: 1;
     }
 
     .category-copy {
-        min-height: 132px;
-        padding: 20px;
+        min-height: 0;
+        padding: 16px 18px;
     }
 
     .category-copy h3 {

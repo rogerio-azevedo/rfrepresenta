@@ -15,6 +15,7 @@ import { MobileWhatsApp } from "./components/mobile-whatsapp";
 import { buildMapsUrl, buildWhatsAppUrl, siteConfig } from "./site-config";
 import { listFeaturedCatalogCollections } from "@/server/dal/catalog";
 import { getR2ObjectUrl } from "@/server/catalog/r2";
+import { editorialFallback, resolveDepartmentCoverKey } from "@/server/catalog/b2b-categories";
 import { showcaseProductDefinitions } from "./showcase-products";
 
 const faqs = [
@@ -53,22 +54,32 @@ const marqueeItems = [
 
 export const revalidate = 300;
 
+function coverUrl(key: string) {
+  return key.startsWith("/") ? key : getR2ObjectUrl(key);
+}
+
 export default async function Home() {
   const whatsappUrl = buildWhatsAppUrl();
   const mapsUrl = buildMapsUrl();
   const catalogCollections = await listFeaturedCatalogCollections();
 
-  const previewCategories = catalogCollections.map((collection) => ({
-    id: collection.slug,
-    name: collection.name,
-    description: collection.description,
-    image: collection.imageKey
-      ? getR2ObjectUrl(collection.imageKey)
-      : getR2ObjectUrl("assets/landing/colcha-online.jpg"),
-    imageAlt: `Seleção ${collection.name} Altenburg`,
-    href: `/catalogo?collection=${collection.slug}`,
-    count: collection.familyCount,
-  }));
+  const previewCategories = catalogCollections.map((collection) => {
+    const fallback = editorialFallback(collection.slug);
+    const raw = collection.description.trim();
+    const description =
+      fallback && (!raw || raw.length > 240 || raw.includes("[/") || /<[^>]+>/.test(raw))
+        ? fallback.description
+        : raw || fallback?.description || "";
+    return {
+      id: collection.slug,
+      name: collection.name,
+      description,
+      image: coverUrl(resolveDepartmentCoverKey(collection.slug, collection.imageKey)),
+      imageAlt: fallback?.imageAlt ?? `Seleção ${collection.name} Altenburg`,
+      href: `/catalogo?collection=${collection.slug}`,
+      count: collection.familyCount,
+    };
+  });
 
   const showcaseProducts = showcaseProductDefinitions.map((item) => ({
     id: item.id,

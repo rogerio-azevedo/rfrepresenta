@@ -8,7 +8,7 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
-import { and, asc, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Pool } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { z } from "zod";
@@ -17,6 +17,8 @@ import {
   extractFacets,
   slugify,
 } from "../src/server/catalog/normalization";
+import { getCategoryPath, toCatalogLineSlug } from "../src/server/catalog/b2b-categories";
+import { syncEditorialCatalog, ensureLineSlugSeparation } from "../src/server/catalog/editorial-sync";
 import {
   catalogCategories,
   catalogCollectionCategories,
@@ -250,41 +252,6 @@ async function uploadImageToR2(
   return asset;
 }
 
-function getCategoryPath(colSlug: string, tipo: string): string {
-  const t = (tipo || "").toUpperCase().trim();
-  const slug = colSlug.toLowerCase();
-
-  if (slug === "travesseiros") return "Travesseiros";
-  if (slug === "protetores") return "Protetores de Colchão e Travesseiro";
-  if (slug === "saia-box") return "Saias Box";
-  if (slug === "cobertor") return "Cobertores";
-  if (slug === "almofadas") return "Almofadas & Rolinhos";
-  if (slug.startsWith("banho")) {
-    if (t.includes("ROSTO")) return "Banho/Toalhas de Rosto";
-    if (t.includes("PISO")) return "Banho/Pisos";
-    return "Banho/Toalhas de Banho";
-  }
-
-  if (t.startsWith("EDREDOM") || t.includes("EDREDOM")) return "Cama/Edredons";
-  if (t.startsWith("JOGO DE COLCHA") || t.includes("COLCHA"))
-    return "Cama/Colchas";
-  if (t.startsWith("ROUPA DE CAMA") || t.includes("LENÇOL"))
-    return "Cama/Jogos de Cama";
-  if (t.includes("PORTA TRAVESSEIRO") || t.includes("FRONHA"))
-    return "Cama/Porta Travesseiros e Fronhas";
-  if (t.includes("MANTA") || t.includes("PESEIRA"))
-    return "Cama/Mantas e Peseiras";
-  if (t.includes("PILLOW TOP")) return "Cama/Pillow Top";
-  if (t.includes("DUVET")) return "Cama/Duvets";
-  if (t.includes("ALMOFADA")) return "Almofadas & Rolinhos";
-
-  if (slug === "linha-decor") return "Linha Décor/Acessórios";
-  if (slug === "acessorios") return "Cama/Acessórios";
-  if (slug === "mundo-kids") return "Mundo Kids/Acessórios";
-
-  return "Cama/Acessórios";
-}
-
 const categoryCache = new Map<string, CatalogCategory>();
 
 async function ensureCategory(pathValue: string): Promise<CatalogCategory> {
@@ -385,12 +352,14 @@ async function run() {
     }
   }
 
-  // 1. Process and Insert Collections
-  console.log("[B2B Import] Cadastrando Coleções e Banners...");
-  const collectionDbMap = new Map<string, string>(); // slug -> collectionId
+  // 1. Process and Insert Collections (B2B lines; colliding slugs get a linha- prefix)
+  console.log("[B2B Import] Cadastrando linhas B2B...");
+  const collectionDbMap = new Map<string, string>(); // json slug -> collectionId
+  await ensureLineSlugSeparation(db);
 
   for (let sortOrder = 0; sortOrder < collectionsData.length; sortOrder++) {
     const col = collectionsData[sortOrder];
+    const catalogSlug = toCatalogLineSlug(col.slug);
     let bannerKey: string | null = null;
 
     if (col.banner) {
@@ -398,30 +367,30 @@ async function run() {
         const asset = await uploadImageToR2(
           col.banner,
           "assets/collections",
-          `${col.slug}-banner`,
+          `${catalogSlug}-banner`,
         );
         bannerKey = asset.objectKey;
       } catch (err) {
         console.warn(
-          `  - Aviso: Falha ao subir banner da coleção ${col.slug}:`,
+          `  - Aviso: Falha ao subir banner da coleção ${catalogSlug}:`,
           err,
         );
       }
     }
 
     const [existing] = await db
-      .select({ id: catalogCollections.id })
+      .select({ id: catalogCollections.id, imageKey: catalogCollections.imageKey })
       .from(catalogCollections)
-      .where(eq(catalogCollections.slug, col.slug))
+      .where(eq(catalogCollections.slug, catalogSlug))
       .limit(1);
 
     const values = {
-      slug: col.slug,
+      slug: catalogSlug,
       name: col.name,
       description: col.description || "",
-      imageKey: bannerKey,
-      sortOrder,
-      isFeatured: true,
+      imageKey: bannerKey ?? existing?.imageKey ?? null,
+      sortOrder: 10 + sortOrder,
+      isFeatured: false,
       isActive: true,
       updatedAt: new Date(),
     };
@@ -464,7 +433,6 @@ async function run() {
   const dbProducts: Array<typeof products.$inferInsert> = [];
   const dbFamilyMembers: Array<typeof productFamilyMembers.$inferInsert> = [];
   const dbProductCategories: Array<typeof productCategories.$inferInsert> = [];
-  const dbCollectionCategories = new Set<string>(); // "collectionId:categoryId"
   const dbFacets: Array<typeof productFacets.$inferInsert> = [];
   const productImagesQueue: ProductImagesToProcess[] = [];
 
@@ -546,7 +514,6 @@ async function run() {
         const category = categoryCache.get(categoryPath);
         if (category) {
           dbProductCategories.push({ productId, categoryId: category.id });
-          dbCollectionCategories.add(`${collectionId}:${category.id}`);
         }
 
         const facets = extractFacets(specs);
@@ -598,6 +565,7 @@ async function run() {
         brand: "Altenburg",
         reviewStatus: "AUTO_APPROVED",
         defaultProductId: firstProductId,
+        collectionId,
       });
     }
   }
@@ -629,20 +597,6 @@ async function run() {
   );
   for (const batch of chunkArray(dbProductCategories, 200)) {
     await db.insert(productCategories).values(batch).onConflictDoNothing();
-  }
-
-  console.log(
-    `[B2B Import] Inserindo ${dbCollectionCategories.size} vínculos de Coleção -> Categoria...`,
-  );
-  const colCatRows = [...dbCollectionCategories].map((pair) => {
-    const [collectionId, categoryId] = pair.split(":");
-    return { collectionId, categoryId };
-  });
-  for (const batch of chunkArray(colCatRows, 200)) {
-    await db
-      .insert(catalogCollectionCategories)
-      .values(batch)
-      .onConflictDoNothing();
   }
 
   console.log(`[B2B Import] Inserindo ${dbFacets.length} facetas de busca...`);
@@ -718,22 +672,19 @@ async function run() {
     if (!collectionRow?.imageKey) {
       const [firstImage] = await db
         .select({ objectKey: productImages.objectKey })
-        .from(catalogCollectionCategories)
+        .from(productFamilies)
         .innerJoin(
-          productCategories,
-          eq(
-            productCategories.categoryId,
-            catalogCollectionCategories.categoryId,
-          ),
+          productFamilyMembers,
+          eq(productFamilyMembers.familyId, productFamilies.id),
         )
         .innerJoin(
           productImages,
           and(
-            eq(productImages.productId, productCategories.productId),
+            eq(productImages.productId, productFamilyMembers.productId),
             eq(productImages.position, 0),
           ),
         )
-        .where(eq(catalogCollectionCategories.collectionId, collectionId))
+        .where(eq(productFamilies.collectionId, collectionId))
         .limit(1);
 
       if (firstImage) {
@@ -744,6 +695,10 @@ async function run() {
       }
     }
   }
+
+  await syncEditorialCatalog(db, {
+    allowedLineSlugs: collectionsData.map((col) => toCatalogLineSlug(col.slug)),
+  });
 
   console.log("\n=======================================================");
   console.log(" 🎉 IMPORTAÇÃO DO CATÁLOGO B2B CONCLUÍDA COM SUCESSO!");

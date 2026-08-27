@@ -1,7 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
-import { and, asc, countDistinct, desc, eq, exists, ilike, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, countDistinct, desc, eq, exists, ilike, inArray, isNull, notInArray, sql } from "drizzle-orm";
 import { db } from "@/server/db";
 import {
   catalogCategories,
@@ -18,6 +18,7 @@ import { getCurrentContext } from "@/server/auth/context";
 import { normalizeKey, valuesFromSpec } from "@/server/catalog/normalization";
 import { catalogQuerySchema, type CatalogQuery } from "@/schemas/products";
 import { ResourceNotFoundError } from "@/server/auth/errors";
+import { EDITORIAL_COLLECTION_SLUGS, isEditorialCollectionSlug } from "@/server/catalog/b2b-categories";
 
 const FACET_PARAMS = {
   color: "color",
@@ -93,17 +94,31 @@ function productConditions(query: CatalogQuery) {
   const conditions = [eq(products.isPublic, true), isNull(products.deletedAt)];
   if (query.q) conditions.push(ilike(products.searchNormalized, `%${normalizeKey(query.q)}%`));
   if (query.collection) {
-    conditions.push(exists(
-      db.select({ id: productCategories.productId })
-        .from(productCategories)
-        .innerJoin(catalogCollectionCategories, eq(catalogCollectionCategories.categoryId, productCategories.categoryId))
-        .innerJoin(catalogCollections, eq(catalogCollections.id, catalogCollectionCategories.collectionId))
-        .where(and(
-          eq(productCategories.productId, products.id),
-          eq(catalogCollections.slug, query.collection),
-          eq(catalogCollections.isActive, true),
-        )),
-    ));
+    if (isEditorialCollectionSlug(query.collection)) {
+      conditions.push(exists(
+        db.select({ id: productCategories.productId })
+          .from(productCategories)
+          .innerJoin(catalogCollectionCategories, eq(catalogCollectionCategories.categoryId, productCategories.categoryId))
+          .innerJoin(catalogCollections, eq(catalogCollections.id, catalogCollectionCategories.collectionId))
+          .where(and(
+            eq(productCategories.productId, products.id),
+            eq(catalogCollections.slug, query.collection),
+            eq(catalogCollections.isActive, true),
+          )),
+      ));
+    } else {
+      conditions.push(exists(
+        db.select({ id: productFamilyMembers.productId })
+          .from(productFamilyMembers)
+          .innerJoin(productFamilies, eq(productFamilies.id, productFamilyMembers.familyId))
+          .innerJoin(catalogCollections, eq(catalogCollections.id, productFamilies.collectionId))
+          .where(and(
+            eq(productFamilyMembers.productId, products.id),
+            eq(catalogCollections.slug, query.collection),
+            eq(catalogCollections.isActive, true),
+          )),
+      ));
+    }
   }
   if (query.category) {
     conditions.push(exists(
@@ -254,39 +269,76 @@ export async function listActiveCatalogCollections() {
       familyCount: countDistinct(productFamilies.id),
     })
     .from(catalogCollections)
+    .leftJoin(productFamilies, eq(productFamilies.collectionId, catalogCollections.id))
+    .leftJoin(productFamilyMembers, eq(productFamilyMembers.familyId, productFamilies.id))
+    .leftJoin(products, and(eq(products.id, productFamilyMembers.productId), eq(products.isPublic, true), isNull(products.deletedAt)))
+    .where(and(
+      eq(catalogCollections.isActive, true),
+      notInArray(catalogCollections.slug, [...EDITORIAL_COLLECTION_SLUGS]),
+    ))
+    .groupBy(catalogCollections.id)
+    .orderBy(asc(catalogCollections.sortOrder), asc(catalogCollections.name));
+  return rows
+    .map((row) => ({ ...row, familyCount: Number(row.familyCount) }))
+    .filter((row) => row.familyCount > 0);
+}
+
+export async function listFeaturedCatalogCollections() {
+  const rows = await db
+    .select({
+      id: catalogCollections.id,
+      slug: catalogCollections.slug,
+      name: catalogCollections.name,
+      description: catalogCollections.description,
+      imageKey: catalogCollections.imageKey,
+      sortOrder: catalogCollections.sortOrder,
+      familyCount: countDistinct(productFamilies.id),
+    })
+    .from(catalogCollections)
     .leftJoin(catalogCollectionCategories, eq(catalogCollectionCategories.collectionId, catalogCollections.id))
     .leftJoin(productCategories, eq(productCategories.categoryId, catalogCollectionCategories.categoryId))
     .leftJoin(products, and(eq(products.id, productCategories.productId), eq(products.isPublic, true), isNull(products.deletedAt)))
     .leftJoin(productFamilyMembers, eq(productFamilyMembers.productId, products.id))
     .leftJoin(productFamilies, eq(productFamilies.id, productFamilyMembers.familyId))
-    .where(eq(catalogCollections.isActive, true))
+    .where(and(eq(catalogCollections.isActive, true), eq(catalogCollections.isFeatured, true)))
     .groupBy(catalogCollections.id)
-    .orderBy(asc(catalogCollections.sortOrder), asc(catalogCollections.name));
+    .orderBy(asc(catalogCollections.sortOrder), asc(catalogCollections.name))
+    .limit(4);
   return rows.map((row) => ({ ...row, familyCount: Number(row.familyCount) }));
-}
-
-export async function listFeaturedCatalogCollections() {
-  const collections = await listActiveCatalogCollections();
-  const featuredIds = await db.select({ id: catalogCollections.id }).from(catalogCollections).where(eq(catalogCollections.isFeatured, true));
-  const ids = new Set(featuredIds.map((item) => item.id));
-  return collections.filter((collection) => ids.has(collection.id)).slice(0, 4);
 }
 
 export async function listCatalogCategoriesForCollection(collectionSlug = "") {
   const conditions = [eq(catalogCategories.isActive, true)];
+  const editorial = Boolean(collectionSlug) && isEditorialCollectionSlug(collectionSlug);
+  const line = Boolean(collectionSlug) && !editorial;
   if (collectionSlug) conditions.push(eq(catalogCollections.slug, collectionSlug));
-  const rows = await db
+
+  const base = db
     .select({ slug: catalogCategories.slug, name: catalogCategories.name, path: catalogCategories.path, count: countDistinct(productFamilies.id) })
     .from(catalogCategories)
     .innerJoin(productCategories, eq(productCategories.categoryId, catalogCategories.id))
     .innerJoin(products, and(eq(products.id, productCategories.productId), eq(products.isPublic, true), isNull(products.deletedAt)))
     .innerJoin(productFamilyMembers, eq(productFamilyMembers.productId, products.id))
-    .innerJoin(productFamilies, eq(productFamilies.id, productFamilyMembers.familyId))
-    .leftJoin(catalogCollectionCategories, eq(catalogCollectionCategories.categoryId, catalogCategories.id))
-    .leftJoin(catalogCollections, eq(catalogCollections.id, catalogCollectionCategories.collectionId))
-    .where(and(...conditions))
-    .groupBy(catalogCategories.id)
-    .orderBy(desc(countDistinct(productFamilies.id)), asc(catalogCategories.path));
+    .innerJoin(productFamilies, eq(productFamilies.id, productFamilyMembers.familyId));
+
+  const rows = editorial
+    ? await base
+      .innerJoin(catalogCollectionCategories, eq(catalogCollectionCategories.categoryId, catalogCategories.id))
+      .innerJoin(catalogCollections, eq(catalogCollections.id, catalogCollectionCategories.collectionId))
+      .where(and(...conditions))
+      .groupBy(catalogCategories.id)
+      .orderBy(desc(countDistinct(productFamilies.id)), asc(catalogCategories.path))
+    : line
+      ? await base
+        .innerJoin(catalogCollections, eq(catalogCollections.id, productFamilies.collectionId))
+        .where(and(...conditions))
+        .groupBy(catalogCategories.id)
+        .orderBy(desc(countDistinct(productFamilies.id)), asc(catalogCategories.path))
+      : await base
+        .where(and(...conditions))
+        .groupBy(catalogCategories.id)
+        .orderBy(desc(countDistinct(productFamilies.id)), asc(catalogCategories.path));
+
   return rows.map((row) => ({ ...row, count: Number(row.count) }));
 }
 

@@ -44,13 +44,13 @@ export function PortfolioSection({ categories }: PortfolioSectionProps) {
                   <span>0{index + 1}</span>
                   <h3>{category.name}</h3>
                   <p>{category.description}</p>
-                  <span className="mt-3 block text-xs font-semibold normal-case tracking-normal">{category.count} {category.count === 1 ? "família" : "famílias"} no catálogo</span>
+                  <span className="mt-2 block text-xs font-semibold normal-case tracking-normal">{category.count} {category.count === 1 ? "família" : "famílias"} no catálogo</span>
                 </div>
               </Link>
             </ClipReveal>
           ))}
         </div>
-        <div className="mt-8 flex justify-center"><Link href="/catalogo" className="button button-primary">Ver catálogo completo</Link></div>
+        <div className="mt-6 flex justify-center"><Link href="/catalogo" className="button button-primary">Ver catálogo completo</Link></div>
       </div>
     </section>
   );

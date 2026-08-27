@@ -85,7 +85,7 @@ function FilterFields({
             className="h-10 w-full min-w-0 max-w-full rounded-md border border-input bg-white px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring truncate"
           >
             <option value="">Todas</option>
-            {categories.slice(0, 40).map((item) => (
+            {categories.map((item) => (
               <option key={item.slug} value={item.slug}>
                 {item.path} ({item.count})
               </option>

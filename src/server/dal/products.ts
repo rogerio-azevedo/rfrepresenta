@@ -218,7 +218,23 @@ export async function listProductBrands() {
 
 export async function listCatalogCategories() {
   await requireAdminContext();
-  return db.select().from(catalogCategories).where(eq(catalogCategories.isActive, true)).orderBy(asc(catalogCategories.path));
+  return db
+    .select({
+      id: catalogCategories.id,
+      path: catalogCategories.path,
+      slug: catalogCategories.slug,
+      name: catalogCategories.name,
+      parentId: catalogCategories.parentId,
+      sortOrder: catalogCategories.sortOrder,
+      isActive: catalogCategories.isActive,
+      createdAt: catalogCategories.createdAt,
+      updatedAt: catalogCategories.updatedAt,
+    })
+    .from(catalogCategories)
+    .innerJoin(productCategories, eq(productCategories.categoryId, catalogCategories.id))
+    .where(eq(catalogCategories.isActive, true))
+    .groupBy(catalogCategories.id)
+    .orderBy(asc(catalogCategories.path));
 }
 
 export async function createProductRecord(input: ProductInput) {
