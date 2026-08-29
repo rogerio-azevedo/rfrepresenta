@@ -3,8 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useTransition } from "react";
-import { Check, Eye, EyeOff, PackageCheck } from "lucide-react";
-import { bulkSetProductVisibilityAction } from "@/actions/products";
+import { Archive, Check, Eye, EyeOff, PackageCheck } from "lucide-react";
+import { bulkArchiveProductsAction, bulkSetProductVisibilityAction } from "@/actions/products";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -43,6 +43,15 @@ export function ProductTable({ rows }: { rows: ProductTableRow[] }) {
     });
   }
 
+  function archiveSelected() {
+    if (!selected.length) return;
+    if (!window.confirm(`Arquivar os ${selected.length} produtos selecionados?`)) return;
+    startTransition(async () => {
+      await bulkArchiveProductsAction(selected);
+      window.location.reload();
+    });
+  }
+
   return (
     <>
       <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -53,9 +62,12 @@ export function ProductTable({ rows }: { rows: ProductTableRow[] }) {
         <Button type="button" variant="outline" size="sm" disabled={!selected.length || pending} onClick={() => setVisibility(false)} title="Ocultar selecionados">
           <EyeOff aria-hidden="true" /> Ocultar
         </Button>
+        <Button type="button" variant="outline" size="sm" disabled={!selected.length || pending} onClick={archiveSelected} title="Arquivar selecionados">
+          <Archive aria-hidden="true" /> Arquivar
+        </Button>
       </div>
       <div className="overflow-x-auto rounded-lg border bg-white">
-        <Table className="min-w-[980px]">
+        <Table className="min-w-280">
           <TableHeader>
             <TableRow>
               <TableHead className="w-12"><input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Selecionar todos os produtos desta página" /></TableHead>
@@ -67,9 +79,9 @@ export function ProductTable({ rows }: { rows: ProductTableRow[] }) {
               <TableRow key={row.id}>
                 <TableCell><input type="checkbox" checked={selected.includes(row.id)} onChange={() => toggle(row.id)} aria-label={`Selecionar ${row.name}`} /></TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-3">
-                    {row.imageUrl ? <Image src={row.imageUrl} alt="" width={44} height={44} className="size-11 rounded-md border object-cover" /> : <div className="flex size-11 items-center justify-center rounded-md border bg-muted"><PackageCheck className="size-4 text-muted-foreground" /></div>}
-                    <div className="min-w-0"><p className="max-w-[360px] truncate font-medium">{row.name}</p><p className="text-xs text-muted-foreground">{row.brand}</p></div>
+                  <div className="flex items-start gap-3">
+                    {row.imageUrl ? <Image src={row.imageUrl} alt="" width={44} height={44} className="size-11 shrink-0 rounded-md border object-cover" /> : <div className="flex size-11 shrink-0 items-center justify-center rounded-md border bg-muted"><PackageCheck className="size-4 text-muted-foreground" /></div>}
+                    <div className="min-w-0"><p className="font-medium wrap-break-word">{row.name}</p><p className="text-xs text-muted-foreground">{row.brand}</p></div>
                   </div>
                 </TableCell>
                 <TableCell>{row.reference || "-"}</TableCell>

@@ -348,6 +348,20 @@ export async function archiveProduct(productId: string) {
   if (!product) throw new ResourceNotFoundError();
 }
 
+export async function bulkArchiveProducts(productIds: string[]) {
+  await requireAdminContext();
+  const results: Array<{ id: string; archived: boolean; reason?: string }> = [];
+  for (const productId of [...new Set(productIds)]) {
+    try {
+      await archiveProduct(productId);
+      results.push({ id: productId, archived: true });
+    } catch (error) {
+      results.push({ id: productId, archived: false, reason: error instanceof Error ? error.message : "Falha ao arquivar." });
+    }
+  }
+  return results;
+}
+
 export async function restoreProduct(productId: string) {
   const context = await requireAdminContext();
   const [product] = await db

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import {
   archiveProduct,
+  bulkArchiveProducts,
   bulkSetProductVisibility,
   confirmProductImage,
   createProductRecord,
@@ -111,6 +112,14 @@ export async function archiveProductAction(productId: string) {
   revalidatePath("/admin/produtos");
   revalidatePath(`/admin/produtos/${id}`);
   revalidatePath("/catalogo");
+}
+
+export async function bulkArchiveProductsAction(productIds: string[]) {
+  const ids = z.array(productIdSchema).min(1).max(100).parse(productIds);
+  const result = await bulkArchiveProducts(ids);
+  revalidatePath("/admin/produtos");
+  revalidatePath("/catalogo");
+  return result;
 }
 
 export async function restoreProductAction(productId: string) {
