@@ -76,9 +76,7 @@ export const products = pgTable(
     salePrice: numeric("sale_price", { precision: 12, scale: 2 }),
     source: productSourceEnum("source").notNull().default("MANUAL"),
     externalId: text("external_id"),
-    rawPayload: text("raw_payload"),
     isPublic: boolean("is_public").notNull().default(true),
-    specs: text("specs").notNull().default("{}"),
     specifications: jsonb("specifications")
       .$type<Record<string, unknown>>()
       .notNull()
