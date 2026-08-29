@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     siteName: "RF Representa",
     title: "RF Representa | Altenburg em Mato Grosso",
     description:
-      "Atendimento comercial Altenburg para lojistas em todo o estado de Mato Grosso.",
+      "Atendimento comercial Altenburg para lojistas em todo o estado de Mato Grosso",
   },
   twitter: {
     card: "summary_large_image",
